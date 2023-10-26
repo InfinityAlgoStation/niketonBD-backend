@@ -1,31 +1,31 @@
 import cors from 'cors';
 import express, { Application, NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
+import routes from './app/routes';
+
+import cookieParser from 'cookie-parser';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
-// import routes from './app/routes/index';
 
 const app: Application = express();
 
 app.use(cors());
+app.use(cookieParser());
 
-// parser
+//parser
 app.use(express.json());
-
-
 app.use(express.urlencoded({ extended: true }));
 
-// routes
-// app.use('/api/v1/', routes);
+app.use('/api/v1', routes);
 
-// testing
+// test routes
 app.get('/', async (req: Request, res: Response) => {
-  res.send('Server is running');
+  res.send('Server is running !');
 });
 
-// global error handler middleware
+//global error handler
 app.use(globalErrorHandler);
 
-// handle not found route
+//handle not found
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
@@ -33,7 +33,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     errorMessages: [
       {
         path: req.originalUrl,
-        message: 'Api Not Found',
+        message: 'API Not Found',
       },
     ],
   });
