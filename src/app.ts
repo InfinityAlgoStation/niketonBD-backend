@@ -15,12 +15,12 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/v1', routes);
-
 // test routes
 app.get('/', async (req: Request, res: Response) => {
   res.send('Server is running !');
 });
+
+app.use('/api/v1', routes);
 
 //global error handler
 app.use(globalErrorHandler);
