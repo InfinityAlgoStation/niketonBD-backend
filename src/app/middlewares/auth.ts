@@ -3,7 +3,7 @@ import httpStatus from 'http-status';
 import { Secret } from 'jsonwebtoken';
 import ApiError from '../../errors/ApiError';
 import { jwtHelpers } from '../../helpers/jwtHelpers';
-import config from '../routes/config';
+import config from '../../config';
 
 const auth =
   (...requiredRoles: string[]) =>

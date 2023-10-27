@@ -28,6 +28,8 @@ CREATE TABLE "extraCharge" (
     "title" TEXT NOT NULL,
     "icon" TEXT NOT NULL,
     "houseId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "extraCharge_pkey" PRIMARY KEY ("id")
 );
@@ -39,6 +41,8 @@ CREATE TABLE "amenities" (
     "icon" TEXT NOT NULL,
     "status" BOOLEAN NOT NULL DEFAULT false,
     "houseId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "amenities_pkey" PRIMARY KEY ("id")
 );
@@ -61,6 +65,8 @@ CREATE TABLE "houses" (
     "rules" TEXT,
     "status" "HouseStatus" NOT NULL,
     "details" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "ownerId" TEXT NOT NULL,
 
     CONSTRAINT "houses_pkey" PRIMARY KEY ("id")
@@ -71,16 +77,18 @@ CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "role" "Role" NOT NULL,
     "userName" TEXT NOT NULL,
-    "firstName" TEXT NOT NULL,
-    "lastName" TEXT NOT NULL,
+    "firstName" TEXT,
+    "lastName" TEXT,
     "email" TEXT NOT NULL,
-    "phone" TEXT NOT NULL,
-    "address" TEXT NOT NULL,
-    "photo" TEXT NOT NULL,
-    "gender" TEXT NOT NULL,
+    "phone" TEXT,
+    "address" TEXT,
+    "photo" TEXT,
+    "gender" TEXT,
     "password" TEXT NOT NULL,
     "token" TEXT,
     "nid" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -88,6 +96,8 @@ CREATE TABLE "users" (
 -- CreateTable
 CREATE TABLE "owners" (
     "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "owners_pkey" PRIMARY KEY ("id")
@@ -96,6 +106,8 @@ CREATE TABLE "owners" (
 -- CreateTable
 CREATE TABLE "tetants" (
     "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "tetants_pkey" PRIMARY KEY ("id")
@@ -106,6 +118,8 @@ CREATE TABLE "feedbacks" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "ownerId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
 
@@ -117,6 +131,8 @@ CREATE TABLE "request" (
     "id" TEXT NOT NULL,
     "requestStatus" TEXT NOT NULL DEFAULT 'PENDING',
     "requestType" "RequestType" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "houseId" TEXT NOT NULL,
     "ownerId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
@@ -128,6 +144,8 @@ CREATE TABLE "request" (
 CREATE TABLE "contracts" (
     "id" TEXT NOT NULL,
     "status" "ContractStatus" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "ownerId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
 
