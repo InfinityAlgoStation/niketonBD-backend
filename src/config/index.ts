@@ -9,6 +9,14 @@ export default {
   port: process.env.PORT,
   database_url: process.env.DATABASE_URL,
   bycrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
+
+  email_host: {
+    name: process.env.EMAIL_HOST_NAME,
+    port: process.env.EMAIL_HOST_PORT,
+    user: process.env.EMAIL_HOST_USER,
+    password: process.env.EMAIL_HOST_PASSWORD,
+  },
+
   jwt: {
     secret: process.env.JWT_SECRET,
     refresh_secret: process.env.JWT_REFRESH_SECRET,
