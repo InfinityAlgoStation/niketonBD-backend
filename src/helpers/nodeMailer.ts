@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import nodemailer from 'nodemailer';
-import config from '../config';
 
+import { createTransport } from 'nodemailer';
+import config from '../config';
+const hostPort = config.email_host.name;
 const transporterOptions = {
-  host: `${config.email_host.name}`,
-  port: Number(config.email_host.port),
+  host: config.email_host.name,
+  port: Number(hostPort),
   secure: true,
   auth: {
     user: `${config.email_host.user}`,
@@ -12,9 +13,9 @@ const transporterOptions = {
   },
 };
 
-const transporter = nodemailer.createTransport(transporterOptions);
+export const transporter = createTransport(transporterOptions);
 
-type TEmailInfo = {
+export type IEmailInfo = {
   from: string;
   to: string;
   subject: string;
@@ -22,7 +23,7 @@ type TEmailInfo = {
   html: string;
 };
 
-export const sentEmail = async (payload: TEmailInfo) => {
+export const sentEmail = async (payload: IEmailInfo) => {
   const info = await transporter.sendMail(payload);
   return info;
 };
