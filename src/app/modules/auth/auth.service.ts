@@ -1,6 +1,6 @@
 import { User } from '@prisma/client';
 import httpStatus from 'http-status';
-import { Secret } from 'jsonwebtoken';
+import { JwtPayload, Secret } from 'jsonwebtoken';
 import config from '../../../config';
 import ApiError from '../../../errors/ApiError';
 import { validateEmail } from '../../../helpers/checkEmailFormateValidity';
@@ -13,6 +13,7 @@ import { jwtHelpers } from '../../../helpers/jwtHelpers';
 import { IEmailInfo, sentEmail } from '../../../helpers/nodeMailer';
 import prisma from '../../../shared/prisma';
 import {
+  IChangePassword,
   ILoginUser,
   ILoginUserResponse,
   IRefreshTokenResponse,
@@ -127,10 +128,59 @@ const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
   };
 };
 
-// const changePassword =async(user:JwtPayload,payload)
+const changePassword = async (
+  user: JwtPayload | null,
+  payload: IChangePassword
+): Promise<void> => {
+  const { oldPassword, newPassword } = payload;
+  console.log(user);
+
+  const isUserExist = await prisma.user.findUnique({
+    where: { id: user?.id },
+  });
+
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User does not exist');
+  }
+
+  if (
+    isUserExist.password &&
+    !(await isPasswordMatched(oldPassword, isUserExist.password))
+  ) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Old Password is not matched');
+  }
+
+  // password validity check
+  const passwordValidity = checkPasswordStrength(
+    isUserExist.email,
+    newPassword
+  );
+  if (!passwordValidity.validity) {
+    throw new ApiError(httpStatus.BAD_REQUEST, passwordValidity.msg);
+  }
+
+  const newEncryptedPassword = await encryptPassword(newPassword);
+  const result = await prisma.user.update({
+    where: { id: isUserExist.id },
+    data: { password: newEncryptedPassword },
+  });
+
+  if (result?.id) {
+    const payload1: IEmailInfo = {
+      from: `${config.email_host.user}`,
+      to: result?.email,
+      subject: 'Password change of Niketon BD',
+      text: `Hi ${isUserExist?.userName} your password has been successfully updated`,
+      html: '<b><h1>Niketon BD</h1></b>',
+    };
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+    const emailSendResult = await sentEmail(payload1);
+  }
+};
 
 export const AuthServices = {
   userRegistration,
   userLogin,
   refreshToken,
+  changePassword,
 };
