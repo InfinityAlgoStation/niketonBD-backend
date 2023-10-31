@@ -29,4 +29,16 @@ router.post(
   validateRequest(AuthValidation.changePasswordZodSchema),
   AuthController.changePassword
 );
+
+router.get(
+  '/sendVerificationLink',
+  auth(
+    ENUM_USER_ROLE.SUPER_ADMIN,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.OWNER,
+    ENUM_USER_ROLE.TENANT
+  ),
+  AuthController.sendEmailForVerifyAccount
+);
+
 export const AuthRoutes = router;

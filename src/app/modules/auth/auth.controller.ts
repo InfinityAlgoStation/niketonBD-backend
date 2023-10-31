@@ -66,9 +66,24 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const sendEmailForVerifyAccount = catchAsync(
+  async (req: Request, res: Response) => {
+    const token = req.headers.authorization;
+    const user = req.user;
+
+    await AuthServices.sendEmailForVerifyAccount(user, token);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Send email for verification',
+    });
+  }
+);
+
 export const AuthController = {
   userRegistration,
   userLogin,
   refreshToken,
   changePassword,
+  sendEmailForVerifyAccount,
 };

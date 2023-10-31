@@ -178,9 +178,33 @@ const changePassword = async (
   }
 };
 
+const sendEmailForVerifyAccount = async (
+  user: JwtPayload | null,
+  token: string | undefined
+) => {
+  const isUserExist = await prisma.user.findUnique({ where: { id: user?.id } });
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found !');
+  }
+
+  const payload1: IEmailInfo = {
+    from: `${config.email_host.user}`,
+    to: isUserExist?.email,
+    subject: 'Email Verification of Niketon BD',
+    text: `Hi ${isUserExist?.userName} ,`,
+    html: `<div><b><h1>Niketon BD</h1></b> </br> <a href="${config.base_url_frontend}/verifyEmail/${token}">Click here to verify your email</a> </div>`,
+  };
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  const emailSendResult = await sentEmail(payload1);
+  if (emailSendResult.accepted.length === 0) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Email send failed !');
+  }
+};
+
 export const AuthServices = {
   userRegistration,
   userLogin,
   refreshToken,
   changePassword,
+  sendEmailForVerifyAccount,
 };

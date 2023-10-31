@@ -9,7 +9,7 @@ export default {
   port: process.env.PORT,
   database_url: process.env.DATABASE_URL,
   bycrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
-
+  base_url_frontend: process.env.BASE_URL_FRONTEND,
   email_host: {
     name: process.env.EMAIL_HOST_NAME,
     port: process.env.EMAIL_HOST_PORT,
