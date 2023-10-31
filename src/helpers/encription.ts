@@ -5,7 +5,7 @@ export const encryptPassword = (password: string) => {
   return result;
 };
 
-export const decryptPassword = (
+export const isPasswordMatched = (
   givenPassword: string,
   savedPassword: string
 ) => {
