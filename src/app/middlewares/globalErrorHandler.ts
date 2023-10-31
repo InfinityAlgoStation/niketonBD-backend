@@ -7,10 +7,10 @@ import handleValidationError from '../../errors/handleValidationError';
 
 import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
+import config from '../../config';
 import handleClientError from '../../errors/handleClientError';
 import handleZodError from '../../errors/handleZodError';
 import { IGenericErrorMessage } from '../../interfaces/error';
-import config from '../../config';
 
 const globalErrorHandler: ErrorRequestHandler = (
   error,

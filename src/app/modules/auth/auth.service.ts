@@ -3,6 +3,8 @@ import httpStatus from 'http-status';
 import { Secret } from 'jsonwebtoken';
 import config from '../../../config';
 import ApiError from '../../../errors/ApiError';
+import { validateEmail } from '../../../helpers/checkEmailFormateValidity';
+import { checkPasswordStrength } from '../../../helpers/checkPasswordStrength';
 import {
   encryptPassword,
   isPasswordMatched,
@@ -18,6 +20,16 @@ import {
 
 const userRegistration = async (payload: User): Promise<User> => {
   const { password, ...othersData } = payload;
+  //check email formate validity
+  if (!validateEmail(othersData.email)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Email formate is not valid');
+  }
+
+  // password validity check
+  const passwordValidity = checkPasswordStrength(othersData.email, password);
+  if (!passwordValidity.validity) {
+    throw new ApiError(httpStatus.BAD_REQUEST, passwordValidity.msg);
+  }
 
   const encryptedPassword = await encryptPassword(password);
   const newData = { ...othersData, password: encryptedPassword };
@@ -25,7 +37,7 @@ const userRegistration = async (payload: User): Promise<User> => {
   const result = await prisma.user.create({ data: newData });
 
   if (!result?.email) {
-    throw new ApiError(400, 'User not create');
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not create');
   }
   // sent email confirmation that successfully Register
 
@@ -114,6 +126,8 @@ const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
     accessToken: newAccessToken,
   };
 };
+
+// const changePassword =async(user:JwtPayload,payload)
 
 export const AuthServices = {
   userRegistration,
