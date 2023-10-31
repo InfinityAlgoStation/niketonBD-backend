@@ -80,10 +80,23 @@ const sendEmailForVerifyAccount = catchAsync(
   }
 );
 
+const verifyEmail = catchAsync(async (req: Request, res: Response) => {
+  const { token } = req.params;
+  const user = req.user;
+
+  await AuthServices.verifyEmail(user, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Verification Done',
+  });
+});
+
 export const AuthController = {
   userRegistration,
   userLogin,
   refreshToken,
   changePassword,
   sendEmailForVerifyAccount,
+  verifyEmail,
 };

@@ -11,6 +11,7 @@ import {
 } from '../../../helpers/encription';
 import { jwtHelpers } from '../../../helpers/jwtHelpers';
 import { IEmailInfo, sentEmail } from '../../../helpers/nodeMailer';
+import { randomString } from '../../../helpers/stringGenrator';
 import prisma from '../../../shared/prisma';
 import {
   IChangePassword,
@@ -52,6 +53,12 @@ const userRegistration = async (payload: User): Promise<User> => {
     };
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     const emailSendResult = await sentEmail(payload1);
+    if (emailSendResult.accepted.length === 0) {
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        'Email send failed !'
+      );
+    }
   }
 
   return result;
@@ -175,6 +182,12 @@ const changePassword = async (
     };
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     const emailSendResult = await sentEmail(payload1);
+    if (emailSendResult.accepted.length === 0) {
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        'Email send failed !'
+      );
+    }
   }
 };
 
@@ -186,13 +199,63 @@ const sendEmailForVerifyAccount = async (
   if (!isUserExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found !');
   }
+  // make uniq token with jwt
+  const newToken = token + randomString();
+
+  const saveTokenDB = await prisma.user.update({
+    where: { id: user?.id },
+    data: { token: newToken },
+  });
+
+  if (!saveTokenDB?.token) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Verification failed');
+  }
 
   const payload1: IEmailInfo = {
     from: `${config.email_host.user}`,
     to: isUserExist?.email,
     subject: 'Email Verification of Niketon BD',
     text: `Hi ${isUserExist?.userName} ,`,
-    html: `<div><b><h1>Niketon BD</h1></b> </br> <a href="${config.base_url_frontend}/verifyEmail/${token}">Click here to verify your email</a> </div>`,
+    html: `<div><b><h1>Niketon BD</h1></b> </br> <a href="${config.base_url_frontend}/verifyEmail/${newToken}">Click here to verify your email</a> </div>`,
+  };
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  const emailSendResult = await sentEmail(payload1);
+  if (emailSendResult.accepted.length === 0) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Email send failed !');
+  }
+};
+
+const verifyEmail = async (
+  user: JwtPayload | null,
+  token: string | undefined
+) => {
+  const isUserExist = await prisma.user.findUnique({
+    where: { id: user?.id },
+  });
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found !');
+  }
+  const isTokenSame = isUserExist?.token === token;
+
+  if (!isTokenSame) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Verification failed');
+  }
+
+  const removeToken = await prisma.user.update({
+    where: { id: user?.id },
+    data: { token: null, verified: true },
+  });
+
+  if (!removeToken?.token === null && removeToken?.verified === false) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Verification failed');
+  }
+
+  const payload1: IEmailInfo = {
+    from: `${config.email_host.user}`,
+    to: isUserExist?.email,
+    subject: 'Email Verified  Niketon BD',
+    text: `Hi ${isUserExist?.userName} ,`,
+    html: `Your Email is Verified`,
   };
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   const emailSendResult = await sentEmail(payload1);
@@ -207,4 +270,5 @@ export const AuthServices = {
   refreshToken,
   changePassword,
   sendEmailForVerifyAccount,
+  verifyEmail,
 };

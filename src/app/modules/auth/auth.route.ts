@@ -40,5 +40,15 @@ router.get(
   ),
   AuthController.sendEmailForVerifyAccount
 );
+router.post(
+  '/verifyEmail/:token',
+  auth(
+    ENUM_USER_ROLE.SUPER_ADMIN,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.OWNER,
+    ENUM_USER_ROLE.TENANT
+  ),
+  AuthController.verifyEmail
+);
 
 export const AuthRoutes = router;
