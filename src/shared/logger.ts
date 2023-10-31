@@ -12,7 +12,7 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 
 const logger = createLogger({
   level: 'info',
-  format: combine(label({ label: 'DCH' }), timestamp(), myFormat),
+  format: combine(label({ label: 'UMP' }), timestamp(), myFormat),
   // save log file based on condition
   transports:
     // config.env === 'production'
@@ -37,7 +37,7 @@ const logger = createLogger({
 
 const errorLogger = createLogger({
   level: 'error',
-  format: combine(label({ label: 'DCH' }), timestamp(), myFormat),
+  format: combine(label({ label: 'UMP' }), timestamp(), myFormat),
   transports:
     // config.env === 'production'
     //   ? [

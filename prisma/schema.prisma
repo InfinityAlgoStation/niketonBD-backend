@@ -1,0 +1,204 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ExtraCharge {
+  id        String   @id @default(uuid())
+  title     String
+  icon      String
+  house     House    @relation(fields: [houseId], references: [id])
+  houseId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("extraCharge")
+}
+
+model Amenity {
+  id        String   @id @default(uuid())
+  title     String
+  icon      String
+  status    Boolean  @default(false)
+  house     House    @relation(fields: [houseId], references: [id])
+  houseId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("amenities")
+}
+
+model House {
+  id               String         @id @default(uuid())
+  houseName        String
+  address          String
+  category         HouseCategory
+  tenantType       TenantType
+  quntity          Int            @default(1)
+  rentFee          Int
+  furnishing       FurnishingType
+  parking          Boolean
+  tenantGender     TenantGender
+  minBookingCharge Int
+  gellary          String[]
+  shortVideo       String?
+  rules            String?
+  status           HouseStatus
+  details          String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  houseOwner       Owner          @relation(fields: [ownerId], references: [id])
+  ownerId          String
+  RentRequest      Request[]
+  Amenity          Amenity[]
+  ExtraCharge      ExtraCharge[]
+
+  @@map("houses")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  role      Role
+  userName  String   @unique
+  verified  Boolean  @default(false)
+  firstName String?
+  lastName  String?
+  email     String   @unique
+  phone     String?  @unique
+  address   String?
+  photo     String?
+  gender    String?
+  password  String
+  token     String?
+  nid       String?
+  Owner     Owner[]
+  Tenant    Tenant[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Owner {
+  id          String     @id @default(uuid())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        User       @relation(fields: [userId], references: [id])
+  House       House[]
+  Feedback    Feedback[]
+  userId      String
+  RentRequest Request[]
+  Contract    Contract[]
+
+  @@map("owners")
+}
+
+model Tenant {
+  id          String     @id @default(uuid())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        User       @relation(fields: [userId], references: [id])
+  userId      String
+  Feedback    Feedback[]
+  RentRequest Request[]
+  Contract    Contract[]
+
+  @@map("tetants")
+}
+
+model Feedback {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  owner       Owner    @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId    String
+
+  @@map("feedbacks")
+}
+
+model Request {
+  id            String      @id @default(uuid())
+  requestStatus String      @default("PENDING")
+  requestType   RequestType
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  house         House       @relation(fields: [houseId], references: [id])
+  houseId       String
+  owner         Owner       @relation(fields: [ownerId], references: [id])
+  ownerId       String
+  tenant        Tenant      @relation(fields: [tenantId], references: [id])
+  tenantId      String
+
+  @@map("request")
+}
+
+model Contract {
+  id        String         @id @default(uuid())
+  status    ContractStatus
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  owner     Owner          @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  tenant    Tenant         @relation(fields: [tenantId], references: [id])
+  tenantId  String
+
+  @@map("contracts")
+}
+
+enum ContractStatus {
+  RUNNING
+  END
+}
+
+enum RequestType {
+  BOOKING
+  LEAVE
+}
+
+enum FurnishingType {
+  FURNISHED
+  SEMI_FURNISHED
+  UNFURNISHED
+}
+
+enum TenantGender {
+  MALE
+  FEMALE
+}
+
+enum TenantType {
+  SUBLATE
+  BACHELOR
+  FAMILY
+}
+
+enum HouseStatus {
+  AVAILABLE
+  BOOKED
+}
+
+enum HouseCategory {
+  FLAT
+  SINGLE_ROOM
+  HOSTEL
+  SHOP
+  OFFICE
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  OWNER
+  TENANT
+}
