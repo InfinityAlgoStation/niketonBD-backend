@@ -32,8 +32,9 @@ const userRegistration = async (payload: User): Promise<User> => {
   if (!passwordValidity.validity) {
     throw new ApiError(httpStatus.BAD_REQUEST, passwordValidity.msg);
   }
-
+  // encrypt password
   const encryptedPassword = await encryptPassword(password);
+
   const newData = { ...othersData, password: encryptedPassword };
 
   const result = await prisma.user.create({ data: newData });
@@ -309,14 +310,57 @@ const forgetPasswordOTPVerify = async (email: string, otp: string) => {
   if (!isTokenSame) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'OTP not matched');
   }
+};
 
-  const removeToken = await prisma.user.update({
-    where: { email: email },
-    data: { token: null },
+const forgetPasswordSetNewPassword = async (
+  email: string,
+  otp: string,
+  newPassword: string
+) => {
+  // password validity check
+  const passwordValidity = checkPasswordStrength(email, newPassword);
+  if (!passwordValidity.validity) {
+    throw new ApiError(httpStatus.BAD_REQUEST, passwordValidity.msg);
+  }
+
+  const isUserExist = await prisma.user.findUnique({
+    where: { email: email, token: otp },
+  });
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found !');
+  }
+
+  // encrypt password
+  const encryptedPassword = await encryptPassword(newPassword);
+
+  const setNewPassword = await prisma.user.update({
+    where: { email: email, token: otp },
+    data: { token: null, password: encryptedPassword },
   });
 
-  if (!removeToken?.token === null && removeToken?.verified === false) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Verification failed');
+  if (
+    !setNewPassword?.token === null &&
+    setNewPassword?.password === newPassword
+  ) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Failed to set new password !'
+    );
+  }
+
+  // send mail that password changed
+
+  const payload1: IEmailInfo = {
+    from: `${config.email_host.user}`,
+    to: isUserExist?.email,
+    subject: 'Successfully change password of Niketon BD',
+    text: `Hi ${isUserExist?.userName} ,`,
+    html: `<div><b><h1>Niketon BD</h1></b> </br> <h1> <b>Your password is changed</b>  </h1></div>`,
+  };
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  const emailSendResult = await sentEmail(payload1);
+  if (emailSendResult.accepted.length === 0) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Email send failed !');
   }
 };
 
@@ -329,4 +373,5 @@ export const AuthServices = {
   verifyEmail,
   forgetPasswordOTPSend,
   forgetPasswordOTPVerify,
+  forgetPasswordSetNewPassword,
 };
