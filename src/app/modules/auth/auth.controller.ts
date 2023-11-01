@@ -92,6 +92,18 @@ const verifyEmail = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const forgetPasswordOTPSend = catchAsync(
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+    AuthServices.forgetPasswordOTPSend(email);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'OTP SEND TO EMAIL !',
+    });
+  }
+);
+
 export const AuthController = {
   userRegistration,
   userLogin,
@@ -99,4 +111,5 @@ export const AuthController = {
   changePassword,
   sendEmailForVerifyAccount,
   verifyEmail,
+  forgetPasswordOTPSend,
 };
