@@ -51,4 +51,5 @@ router.post(
   AuthController.verifyEmail
 );
 router.post('/forgetPasswordEmailSend', AuthController.forgetPasswordOTPSend);
+router.post('/forgetPasswordOTPVerify', AuthController.forgetPasswordOTPVerify);
 export const AuthRoutes = router;

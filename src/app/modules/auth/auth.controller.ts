@@ -104,6 +104,18 @@ const forgetPasswordOTPSend = catchAsync(
   }
 );
 
+const forgetPasswordOTPVerify = catchAsync(
+  async (req: Request, res: Response) => {
+    const { email, otp } = req.body;
+    await AuthServices.forgetPasswordOTPVerify(email, otp);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'OTP matched',
+    });
+  }
+);
+
 export const AuthController = {
   userRegistration,
   userLogin,
@@ -112,4 +124,5 @@ export const AuthController = {
   sendEmailForVerifyAccount,
   verifyEmail,
   forgetPasswordOTPSend,
+  forgetPasswordOTPVerify,
 };

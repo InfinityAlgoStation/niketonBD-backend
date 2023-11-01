@@ -238,7 +238,7 @@ const verifyEmail = async (
   const isTokenSame = isUserExist?.token === token;
 
   if (!isTokenSame) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Verification failed');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Verification failed');
   }
 
   const removeToken = await prisma.user.update({
@@ -273,6 +273,14 @@ const forgetPasswordOTPSend = async (email: string) => {
   }
 
   const generatedOTP = otpGenerator();
+  const saveTokenDB = await prisma.user.update({
+    where: { email: email },
+    data: { token: generatedOTP },
+  });
+
+  if (!saveTokenDB?.token) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Otp Send failed !');
+  }
 
   const payload1: IEmailInfo = {
     from: `${config.email_host.user}`,
@@ -288,6 +296,30 @@ const forgetPasswordOTPSend = async (email: string) => {
   }
 };
 
+const forgetPasswordOTPVerify = async (email: string, otp: string) => {
+  const isUserExist = await prisma.user.findUnique({
+    where: { email: email },
+  });
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found !');
+  }
+
+  const isTokenSame = isUserExist?.token === otp;
+
+  if (!isTokenSame) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'OTP not matched');
+  }
+
+  const removeToken = await prisma.user.update({
+    where: { email: email },
+    data: { token: null },
+  });
+
+  if (!removeToken?.token === null && removeToken?.verified === false) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Verification failed');
+  }
+};
+
 export const AuthServices = {
   userRegistration,
   userLogin,
@@ -296,4 +328,5 @@ export const AuthServices = {
   sendEmailForVerifyAccount,
   verifyEmail,
   forgetPasswordOTPSend,
+  forgetPasswordOTPVerify,
 };
