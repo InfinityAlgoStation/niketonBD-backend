@@ -11,7 +11,7 @@ import {
 } from '../../../helpers/encription';
 import { jwtHelpers } from '../../../helpers/jwtHelpers';
 import { IEmailInfo, sentEmail } from '../../../helpers/nodeMailer';
-import { randomString } from '../../../helpers/stringGenrator';
+import { otpGenerator, randomString } from '../../../helpers/stringGenrator';
 import prisma from '../../../shared/prisma';
 import {
   IChangePassword,
@@ -264,6 +264,30 @@ const verifyEmail = async (
   }
 };
 
+const forgetPasswordOTPSend = async (email: string) => {
+  const isUserExist = await prisma.user.findUnique({
+    where: { email: email },
+  });
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found !');
+  }
+
+  const generatedOTP = otpGenerator();
+
+  const payload1: IEmailInfo = {
+    from: `${config.email_host.user}`,
+    to: isUserExist?.email,
+    subject: 'Forget password of Niketon BD',
+    text: `Hi ${isUserExist?.userName} ,`,
+    html: `<div><b><h1>Niketon BD</h1></b> </br> <h4> Your OTP is  </h4></br> <h1> <b>${generatedOTP}</b>  </h1></div>`,
+  };
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  const emailSendResult = await sentEmail(payload1);
+  if (emailSendResult.accepted.length === 0) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Email send failed !');
+  }
+};
+
 export const AuthServices = {
   userRegistration,
   userLogin,
@@ -271,4 +295,5 @@ export const AuthServices = {
   changePassword,
   sendEmailForVerifyAccount,
   verifyEmail,
+  forgetPasswordOTPSend,
 };
