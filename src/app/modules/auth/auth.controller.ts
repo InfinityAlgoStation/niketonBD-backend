@@ -116,6 +116,18 @@ const forgetPasswordOTPVerify = catchAsync(
   }
 );
 
+const forgetPasswordSetNewPassword = catchAsync(
+  async (req: Request, res: Response) => {
+    const { email, otp, newPassword } = req.body;
+    await AuthServices.forgetPasswordSetNewPassword(email, otp, newPassword);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Successfully password changed',
+    });
+  }
+);
+
 export const AuthController = {
   userRegistration,
   userLogin,
@@ -125,4 +137,5 @@ export const AuthController = {
   verifyEmail,
   forgetPasswordOTPSend,
   forgetPasswordOTPVerify,
+  forgetPasswordSetNewPassword,
 };
