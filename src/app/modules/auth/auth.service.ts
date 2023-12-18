@@ -32,35 +32,62 @@ const userRegistration = async (payload: User): Promise<User> => {
   if (!passwordValidity.validity) {
     throw new ApiError(httpStatus.BAD_REQUEST, passwordValidity.msg);
   }
-  // encrypt password
-  const encryptedPassword = await encryptPassword(password);
 
-  const newData = { ...othersData, password: encryptedPassword };
+  // Start a Prisma transaction
+  const result = await prisma.$transaction(async prismaClient => {
+    // Encrypt password
+    const encryptedPassword = await encryptPassword(password);
 
-  const result = await prisma.user.create({ data: newData });
+    // Create user with encrypted password
+    const createdUser = await prismaClient.user.create({
+      data: { ...othersData, password: encryptedPassword },
+    });
 
-  if (!result?.email) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not create');
-  }
-  // sent email confirmation that successfully Register
+    if (!createdUser?.email) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'User not created');
+    }
 
-  if (result?.email) {
+    // Create Owner or Tenant based on the role
+    let relatedModel;
+    if (othersData?.role === 'OWNER') {
+      relatedModel = await prismaClient.owner.create({
+        data: { userId: createdUser.id },
+      });
+    } else if (othersData?.role === 'TENANT') {
+      relatedModel = await prismaClient.tenant.create({
+        data: { userId: createdUser.id },
+      });
+    }
+
+    if (!relatedModel?.userId) {
+      // If the related model is not created successfully, throw an error to roll back the transaction
+      throw new Error('Related model not created');
+    }
+
+    // Send email confirmation
     const payload1: IEmailInfo = {
       from: `${config.email_host.user}`,
-      to: result?.email,
+      to: createdUser.email,
       subject: 'Registration Done',
       text: 'Welcome to Niketon BD',
       html: '<b><h1>Niketon BD</h1></b>',
     };
-    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+
     const emailSendResult = await sentEmail(payload1);
     if (emailSendResult.accepted.length === 0) {
-      throw new ApiError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        'Email send failed !'
-      );
+      // If email sending fails, throw an error to roll back the transaction
+      throw new Error('Email send failed');
     }
-  }
+
+    // Return the created user
+    if (othersData?.role === 'OWNER') {
+      return { ...createdUser, owner: relatedModel };
+    } else if (othersData?.role === 'TENANT') {
+      return { ...createdUser, tenant: relatedModel };
+    }
+
+    return createdUser;
+  });
 
   return result;
 };
