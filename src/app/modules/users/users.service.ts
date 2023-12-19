@@ -18,6 +18,11 @@ const getSingle = async (id: string): Promise<User | null> => {
       superAdmin: true,
     },
   });
+
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User does not exist !');
+  }
+
   return result;
 };
 const getProfile = async (id: string): Promise<User | null> => {
@@ -40,6 +45,12 @@ const updateUser = async (
   payload: Partial<User>
 ): Promise<User> => {
   if (userRole === 'ADMIN' || userRole === 'SUPERADMIN') {
+    const isUserExist = await prisma.user.findUnique({
+      where: { id: updateProfileId },
+    });
+    if (!isUserExist) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'User does not exist !');
+    }
     const result = await prisma.user.update({
       where: {
         id: updateProfileId,
@@ -48,6 +59,12 @@ const updateUser = async (
     });
     return result;
   } else {
+    const isUserExist = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!isUserExist) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'User does not exist !');
+    }
     const result = await prisma.user.update({
       where: {
         id: userId,
