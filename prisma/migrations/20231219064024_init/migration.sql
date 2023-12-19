@@ -20,7 +20,7 @@ CREATE TYPE "HouseStatus" AS ENUM ('AVAILABLE', 'BOOKED');
 CREATE TYPE "HouseCategory" AS ENUM ('FLAT', 'SINGLE_ROOM', 'HOSTEL', 'SHOP', 'OFFICE');
 
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'OWNER', 'TENANT');
+CREATE TYPE "Role" AS ENUM ('SUPERADMIN', 'ADMIN', 'OWNER', 'TENANT');
 
 -- CreateTable
 CREATE TABLE "extraCharge" (
@@ -77,6 +77,7 @@ CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "role" "Role" NOT NULL,
     "userName" TEXT NOT NULL,
+    "verified" BOOLEAN NOT NULL DEFAULT false,
     "firstName" TEXT,
     "lastName" TEXT,
     "email" TEXT NOT NULL,
@@ -111,6 +112,16 @@ CREATE TABLE "tetants" (
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "tetants_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "superAdmin" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "superAdmin_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -161,6 +172,15 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 -- CreateIndex
 CREATE UNIQUE INDEX "users_phone_key" ON "users"("phone");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "owners_userId_key" ON "owners"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "tetants_userId_key" ON "tetants"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "superAdmin_userId_key" ON "superAdmin"("userId");
+
 -- AddForeignKey
 ALTER TABLE "extraCharge" ADD CONSTRAINT "extraCharge_houseId_fkey" FOREIGN KEY ("houseId") REFERENCES "houses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -175,6 +195,9 @@ ALTER TABLE "owners" ADD CONSTRAINT "owners_userId_fkey" FOREIGN KEY ("userId") 
 
 -- AddForeignKey
 ALTER TABLE "tetants" ADD CONSTRAINT "tetants_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "superAdmin" ADD CONSTRAINT "superAdmin_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "feedbacks" ADD CONSTRAINT "feedbacks_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "owners"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
