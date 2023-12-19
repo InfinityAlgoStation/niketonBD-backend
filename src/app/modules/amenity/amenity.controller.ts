@@ -24,8 +24,18 @@ const getAll = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getSingle = catchAsync(async (req: Request, res: Response) => {
+  const result = await AmenityServices.getSingle(req.params.id);
+  sendResponse<Amenity>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Amenity retrieved !',
+    data: result,
+  });
+});
 
 export const AmenityController = {
   createNew,
   getAll,
+  getSingle,
 };
