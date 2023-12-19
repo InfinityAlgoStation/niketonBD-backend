@@ -27,7 +27,6 @@ CREATE TABLE "extraCharge" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "icon" TEXT NOT NULL,
-    "houseId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -38,9 +37,8 @@ CREATE TABLE "extraCharge" (
 CREATE TABLE "amenities" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "icon" TEXT NOT NULL,
+    "icon" TEXT,
     "status" BOOLEAN NOT NULL DEFAULT false,
-    "houseId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -58,7 +56,7 @@ CREATE TABLE "houses" (
     "rentFee" INTEGER NOT NULL,
     "furnishing" "FurnishingType" NOT NULL,
     "parking" BOOLEAN NOT NULL,
-    "tenantGender" "TenantGender" NOT NULL,
+    "tenantGender" "TenantGender",
     "minBookingCharge" INTEGER NOT NULL,
     "gellary" TEXT[],
     "shortVideo" TEXT,
@@ -70,6 +68,26 @@ CREATE TABLE "houses" (
     "ownerId" TEXT NOT NULL,
 
     CONSTRAINT "houses_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "HouseExtraCharge" (
+    "houseId" TEXT NOT NULL,
+    "extraChargeId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "HouseExtraCharge_pkey" PRIMARY KEY ("houseId","extraChargeId")
+);
+
+-- CreateTable
+CREATE TABLE "HouseAmenity" (
+    "houseId" TEXT NOT NULL,
+    "amenityId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "HouseAmenity_pkey" PRIMARY KEY ("houseId","amenityId")
 );
 
 -- CreateTable
@@ -182,13 +200,19 @@ CREATE UNIQUE INDEX "tetants_userId_key" ON "tetants"("userId");
 CREATE UNIQUE INDEX "superAdmin_userId_key" ON "superAdmin"("userId");
 
 -- AddForeignKey
-ALTER TABLE "extraCharge" ADD CONSTRAINT "extraCharge_houseId_fkey" FOREIGN KEY ("houseId") REFERENCES "houses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "amenities" ADD CONSTRAINT "amenities_houseId_fkey" FOREIGN KEY ("houseId") REFERENCES "houses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "houses" ADD CONSTRAINT "houses_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "owners"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "HouseExtraCharge" ADD CONSTRAINT "HouseExtraCharge_houseId_fkey" FOREIGN KEY ("houseId") REFERENCES "houses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "HouseExtraCharge" ADD CONSTRAINT "HouseExtraCharge_extraChargeId_fkey" FOREIGN KEY ("extraChargeId") REFERENCES "extraCharge"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "HouseAmenity" ADD CONSTRAINT "HouseAmenity_houseId_fkey" FOREIGN KEY ("houseId") REFERENCES "houses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "HouseAmenity" ADD CONSTRAINT "HouseAmenity_amenityId_fkey" FOREIGN KEY ("amenityId") REFERENCES "amenities"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "owners" ADD CONSTRAINT "owners_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

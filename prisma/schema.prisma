@@ -11,26 +11,24 @@ datasource db {
 }
 
 model ExtraCharge {
-  id        String   @id @default(uuid())
-  title     String
-  icon      String
-  house     House    @relation(fields: [houseId], references: [id])
-  houseId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String             @id @default(uuid())
+  title            String
+  icon             String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  HouseExtraCharge HouseExtraCharge[]
 
   @@map("extraCharge")
 }
 
 model Amenity {
-  id        String   @id @default(uuid())
-  title     String
-  icon      String
-  status    Boolean  @default(false)
-  house     House    @relation(fields: [houseId], references: [id])
-  houseId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String         @id @default(uuid())
+  title        String
+  icon         String
+  status       Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  HouseAmenity HouseAmenity[]
 
   @@map("amenities")
 }
@@ -45,7 +43,7 @@ model House {
   rentFee          Int
   furnishing       FurnishingType
   parking          Boolean
-  tenantGender     TenantGender
+  tenantGender     TenantGender?
   minBookingCharge Int
   gellary          String[]
   shortVideo       String?
@@ -57,10 +55,37 @@ model House {
   houseOwner       Owner          @relation(fields: [ownerId], references: [id])
   ownerId          String
   RentRequest      Request[]
-  Amenity          Amenity[]
-  ExtraCharge      ExtraCharge[]
+
+  HouseAmenity     HouseAmenity[]
+  HouseExtraCharge HouseExtraCharge[]
 
   @@map("houses")
+}
+
+model HouseExtraCharge {
+  house   House  @relation(fields: [houseId], references: [id])
+  houseId String
+
+  extraCharge   ExtraCharge @relation(fields: [extraChargeId], references: [id])
+  extraChargeId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([houseId, extraChargeId])
+}
+
+model HouseAmenity {
+  house   House  @relation(fields: [houseId], references: [id])
+  houseId String
+
+  amenity   Amenity @relation(fields: [amenityId], references: [id])
+  amenityId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([houseId, amenityId])
 }
 
 model User {
