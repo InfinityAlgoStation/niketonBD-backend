@@ -1,5 +1,7 @@
 import express from 'express';
+import { AmenityRoutes } from '../modules/amenity/amenity.routes';
 import { AuthRoutes } from '../modules/auth/auth.route';
+import { ExtraChargeRoutes } from '../modules/extraCharge/extraCharge.routes';
 import { UserRoutes } from '../modules/users/users.routes';
 
 const router = express.Router();
@@ -13,6 +15,14 @@ const moduleRoutes = [
   {
     path: '/users',
     route: UserRoutes,
+  },
+  {
+    path: '/amenities',
+    route: AmenityRoutes,
+  },
+  {
+    path: '/extraCharge',
+    route: ExtraChargeRoutes,
   },
 ];
 
