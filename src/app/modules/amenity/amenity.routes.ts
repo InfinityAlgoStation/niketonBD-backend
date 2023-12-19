@@ -30,5 +30,15 @@ router.get(
   ),
   AmenityController.getSingle
 );
+router.patch(
+  '/:id',
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  AmenityController.updateSingle
+);
+router.delete(
+  '/:id',
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  AmenityController.deleteSingle
+);
 
 export const AmenityRoutes = router;
