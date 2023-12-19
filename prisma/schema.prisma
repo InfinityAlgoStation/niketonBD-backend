@@ -64,24 +64,25 @@ model House {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  role      Role
-  userName  String   @unique
-  verified  Boolean  @default(false)
-  firstName String?
-  lastName  String?
-  email     String   @unique
-  phone     String?  @unique
-  address   String?
-  photo     String?
-  gender    String?
-  password  String
-  token     String?
-  nid       String?
-  owner     Owner?
-  tenant    Tenant?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String      @id @default(uuid())
+  role       Role
+  userName   String      @unique
+  verified   Boolean     @default(false)
+  firstName  String?
+  lastName   String?
+  email      String      @unique
+  phone      String?     @unique
+  address    String?
+  photo      String?
+  gender     String?
+  password   String
+  token      String?
+  nid        String?
+  owner      Owner?
+  tenant     Tenant?
+  superAdmin SuperAdmin?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
   @@map("users")
 }
@@ -112,6 +113,27 @@ model Tenant {
   Contract    Contract[]
 
   @@map("tetants")
+}
+
+// model Admin {
+//   id           String   @id @default(uuid())
+//   makeBy       String
+//   user
+//   createdAt    DateTime @default(now())
+//   updatedAt    DateTime @updatedAt
+//   superAdminId String
+
+//   @@map("admin")
+// }
+
+model SuperAdmin {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+
+  @@map("superAdmin")
 }
 
 model Feedback {
@@ -198,7 +220,7 @@ enum HouseCategory {
 }
 
 enum Role {
-  SUPER_ADMIN
+  SUPERADMIN
   ADMIN
   OWNER
   TENANT

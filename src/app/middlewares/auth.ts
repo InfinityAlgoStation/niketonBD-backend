@@ -16,7 +16,10 @@ const auth =
 
       let verifiedUser = null;
 
-      verifiedUser = jwtHelpers.verifyToken(token, config.jwt.secret as Secret);
+      verifiedUser = await jwtHelpers.verifyToken(
+        token,
+        config.jwt.secret as Secret
+      );
 
       req.user = verifiedUser;
 

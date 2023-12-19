@@ -57,6 +57,10 @@ const userRegistration = async (payload: User): Promise<User> => {
       relatedModel = await prismaClient.tenant.create({
         data: { userId: createdUser.id },
       });
+    } else if (othersData?.role === 'SUPERADMIN') {
+      relatedModel = await prismaClient.superAdmin.create({
+        data: { userId: createdUser.id },
+      });
     }
 
     if (!relatedModel?.userId) {
@@ -84,6 +88,8 @@ const userRegistration = async (payload: User): Promise<User> => {
       return { ...createdUser, owner: relatedModel };
     } else if (othersData?.role === 'TENANT') {
       return { ...createdUser, tenant: relatedModel };
+    } else if (othersData?.role === 'SUPERADMIN') {
+      return { ...createdUser, superAdmin: relatedModel };
     }
 
     return createdUser;
