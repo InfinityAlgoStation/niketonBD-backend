@@ -24,6 +24,16 @@ const handleClientError = (error: Prisma.PrismaClientKnownRequestError) => {
         },
       ];
     }
+  } else if (error.code === 'P2002') {
+    if (error.message.includes('Unique constraint failed')) {
+      message = 'Duplicate Key Error';
+      errors = [
+        {
+          path: '',
+          message,
+        },
+      ];
+    }
   }
 
   return {
