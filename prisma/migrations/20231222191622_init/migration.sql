@@ -37,7 +37,7 @@ CREATE TABLE "extraCharge" (
 CREATE TABLE "amenities" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "icon" TEXT,
+    "icon" TEXT NOT NULL,
     "status" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE "houses" (
     "category" "HouseCategory" NOT NULL,
     "tenantType" "TenantType" NOT NULL,
     "quntity" INTEGER NOT NULL DEFAULT 1,
-    "rentFee" INTEGER NOT NULL,
+    "rentFee" DOUBLE PRECISION NOT NULL,
     "furnishing" "FurnishingType" NOT NULL,
     "parking" BOOLEAN NOT NULL,
     "tenantGender" "TenantGender",
@@ -68,6 +68,31 @@ CREATE TABLE "houses" (
     "ownerId" TEXT NOT NULL,
 
     CONSTRAINT "houses_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "HousePost" (
+    "id" TEXT NOT NULL,
+    "houseName" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
+    "contact" TEXT NOT NULL,
+    "category" "HouseCategory" NOT NULL,
+    "tenantType" "TenantType" NOT NULL,
+    "quntity" INTEGER NOT NULL DEFAULT 1,
+    "rentFee" DOUBLE PRECISION NOT NULL,
+    "furnishing" "FurnishingType" NOT NULL,
+    "parking" BOOLEAN NOT NULL,
+    "tenantGender" "TenantGender",
+    "minBookingCharge" INTEGER NOT NULL,
+    "gellary" TEXT[],
+    "shortVideo" TEXT,
+    "rules" TEXT,
+    "status" "HouseStatus" NOT NULL,
+    "details" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "HousePost_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable

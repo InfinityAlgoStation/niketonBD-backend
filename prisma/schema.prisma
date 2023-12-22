@@ -40,7 +40,7 @@ model House {
   category         HouseCategory
   tenantType       TenantType
   quntity          Int            @default(1)
-  rentFee          Int
+  rentFee          Float
   furnishing       FurnishingType
   parking          Boolean
   tenantGender     TenantGender?
@@ -60,6 +60,28 @@ model House {
   HouseExtraCharge HouseExtraCharge[]
 
   @@map("houses")
+}
+
+model HousePost {
+  id               String         @id @default(uuid())
+  houseName        String
+  address          String
+  contact          String
+  category         HouseCategory
+  tenantType       TenantType
+  quntity          Int            @default(1)
+  rentFee          Float
+  furnishing       FurnishingType
+  parking          Boolean
+  tenantGender     TenantGender?
+  minBookingCharge Int
+  gellary          String[]
+  shortVideo       String?
+  rules            String?
+  status           HouseStatus
+  details          String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 }
 
 model HouseExtraCharge {
