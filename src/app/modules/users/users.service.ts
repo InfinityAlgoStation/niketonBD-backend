@@ -31,7 +31,11 @@ const getProfile = async (id: string): Promise<User | null> => {
       id,
     },
     include: {
-      owner: true,
+      owner: {
+        include: {
+          houses: true,
+        },
+      },
       tenant: true,
       superAdmin: true,
     },

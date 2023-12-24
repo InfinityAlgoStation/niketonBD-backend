@@ -2,6 +2,7 @@ import express from 'express';
 import { AmenityRoutes } from '../modules/amenity/amenity.routes';
 import { AuthRoutes } from '../modules/auth/auth.route';
 import { ExtraChargeRoutes } from '../modules/extraCharge/extraCharge.routes';
+import { HouseRoutes } from '../modules/houses/houses.routes';
 import { UserRoutes } from '../modules/users/users.routes';
 
 const router = express.Router();
@@ -23,6 +24,10 @@ const moduleRoutes = [
   {
     path: '/extraCharge',
     route: ExtraChargeRoutes,
+  },
+  {
+    path: '/houses',
+    route: HouseRoutes,
   },
 ];
 
