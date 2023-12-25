@@ -1,4 +1,6 @@
 import { House } from '@prisma/client';
+import httpStatus from 'http-status';
+import ApiError from '../../../errors/ApiError';
 import { paginationHelpers } from '../../../helpers/paginationHelper';
 import { IGenericResponse } from '../../../interfaces/common';
 import { IPaginationOptions } from '../../../interfaces/pagination';
@@ -88,7 +90,16 @@ const getAllHouse = async (
   };
 };
 
+const getSingleHouseDetails = async (id: string): Promise<House | null> => {
+  const result = await prisma.house.findUnique({ where: { id } });
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'House details not found');
+  }
+  return result;
+};
+
 export const HouseServices = {
   createNew,
   getAllHouse,
+  getSingleHouseDetails,
 };

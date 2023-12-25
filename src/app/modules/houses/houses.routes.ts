@@ -15,5 +15,6 @@ router.post(
 );
 
 router.get('/', HouseController.getAllHouse);
+router.get('/:id', HouseController.getSingleHouse);
 
 export const HouseRoutes = router;
