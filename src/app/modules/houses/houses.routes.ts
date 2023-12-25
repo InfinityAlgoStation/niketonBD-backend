@@ -14,4 +14,6 @@ router.post(
   HouseController.createNew
 );
 
+router.get('/', HouseController.getAllHouse);
+
 export const HouseRoutes = router;

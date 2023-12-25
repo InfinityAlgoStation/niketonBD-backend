@@ -1,5 +1,9 @@
 import { House } from '@prisma/client';
+import { paginationHelpers } from '../../../helpers/paginationHelper';
+import { IGenericResponse } from '../../../interfaces/common';
+import { IPaginationOptions } from '../../../interfaces/pagination';
 import prisma from '../../../shared/prisma';
+import { houseSearchableFields } from './houses.constant';
 
 const createNew = async (payload: House): Promise<House> => {
   const result = await prisma.house.create({
@@ -11,6 +15,80 @@ const createNew = async (payload: House): Promise<House> => {
   return result;
 };
 
+const getAllHouse = async (
+  filters: any,
+  options: IPaginationOptions
+): Promise<IGenericResponse<House[]>> => {
+  const { limit, page, skip } = paginationHelpers.calculatePagination(options);
+  const { searchTerm, minRentFee, maxRentFee, ...filtersData } = filters;
+  const andConditions = [];
+
+  if (searchTerm) {
+    andConditions.push({
+      OR: houseSearchableFields.map(field => ({
+        [field]: {
+          contains: searchTerm,
+          mode: 'insensitive',
+        },
+      })),
+    });
+  }
+
+  if (Object.keys(filtersData).length) {
+    const conditions = Object.entries(filtersData).map(([field, value]) => ({
+      [field]: value,
+    }));
+    andConditions.push({ AND: conditions });
+  }
+
+  const minRentFeeFloat = parseFloat(minRentFee);
+  const maxRentFeeFloat = parseFloat(maxRentFee);
+
+  if (!isNaN(minRentFeeFloat)) {
+    andConditions.push({
+      rentFee: {
+        gte: minRentFeeFloat,
+      },
+    });
+  }
+  if (!isNaN(maxRentFeeFloat)) {
+    andConditions.push({
+      rentFee: {
+        lte: maxRentFeeFloat,
+      },
+    });
+  }
+
+  const whereConditions =
+    andConditions.length > 0 ? { AND: andConditions } : {};
+
+  const result = await prisma.house.findMany({
+    where: whereConditions,
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? { [options.sortBy]: options.sortOrder }
+        : {
+            createdAt: 'desc',
+          },
+  });
+
+  const total = await prisma.house.count({
+    where: whereConditions,
+  });
+
+  return {
+    meta: {
+      total,
+      page,
+      limit,
+    },
+    data: result,
+  };
+};
+
 export const HouseServices = {
   createNew,
+  getAllHouse,
 };
