@@ -17,7 +17,7 @@ CREATE TYPE "TenantType" AS ENUM ('SUBLATE', 'BACHELOR', 'FAMILY');
 CREATE TYPE "HouseStatus" AS ENUM ('AVAILABLE', 'BOOKED');
 
 -- CreateEnum
-CREATE TYPE "HouseCategory" AS ENUM ('FLAT', 'SINGLE_ROOM', 'HOSTEL', 'SHOP', 'OFFICE');
+CREATE TYPE "HouseCategory" AS ENUM ('FLAT', 'SINGLE_ROOM', 'HOSTEL', 'SHOP', 'OFFICE', 'GARAGE');
 
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('SUPERADMIN', 'ADMIN', 'OWNER', 'TENANT');
@@ -37,8 +37,6 @@ CREATE TABLE "extraCharge" (
 CREATE TABLE "amenities" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "icon" TEXT,
-    "status" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -52,22 +50,39 @@ CREATE TABLE "houses" (
     "address" TEXT NOT NULL,
     "category" "HouseCategory" NOT NULL,
     "tenantType" "TenantType" NOT NULL,
-    "quntity" INTEGER NOT NULL DEFAULT 1,
-    "rentFee" INTEGER NOT NULL,
-    "furnishing" "FurnishingType" NOT NULL,
-    "parking" BOOLEAN NOT NULL,
+    "quntity" INTEGER DEFAULT 1,
+    "rentFee" DOUBLE PRECISION NOT NULL,
+    "furnishing" "FurnishingType",
+    "parking" BOOLEAN,
     "tenantGender" "TenantGender",
     "minBookingCharge" INTEGER NOT NULL,
     "gellary" TEXT[],
     "shortVideo" TEXT,
     "rules" TEXT,
-    "status" "HouseStatus" NOT NULL,
-    "details" TEXT NOT NULL,
+    "status" "HouseStatus" NOT NULL DEFAULT 'AVAILABLE',
+    "details" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "ownerId" TEXT NOT NULL,
 
     CONSTRAINT "houses_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "HousePost" (
+    "id" TEXT NOT NULL,
+    "houseName" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
+    "contact" TEXT NOT NULL,
+    "gellary" TEXT[],
+    "details" TEXT NOT NULL,
+    "category" "HouseCategory" NOT NULL,
+    "rentFee" DOUBLE PRECISION NOT NULL,
+    "minBookingCharge" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "HousePost_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable

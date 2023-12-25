@@ -13,7 +13,7 @@ datasource db {
 model ExtraCharge {
   id               String             @id @default(uuid())
   title            String
-  icon             String
+  icon             String?
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   HouseExtraCharge HouseExtraCharge[]
@@ -24,8 +24,6 @@ model ExtraCharge {
 model Amenity {
   id           String         @id @default(uuid())
   title        String
-  icon         String
-  status       Boolean        @default(false)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   HouseAmenity HouseAmenity[]
@@ -34,25 +32,25 @@ model Amenity {
 }
 
 model House {
-  id               String         @id @default(uuid())
+  id               String          @id @default(uuid())
   houseName        String
   address          String
   category         HouseCategory
   tenantType       TenantType
-  quntity          Int            @default(1)
-  rentFee          Int
-  furnishing       FurnishingType
-  parking          Boolean
+  quntity          Int?            @default(1)
+  rentFee          Float
+  furnishing       FurnishingType?
+  parking          Boolean?
   tenantGender     TenantGender?
   minBookingCharge Int
   gellary          String[]
   shortVideo       String?
   rules            String?
-  status           HouseStatus
-  details          String
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  houseOwner       Owner          @relation(fields: [ownerId], references: [id])
+  status           HouseStatus     @default(AVAILABLE)
+  details          String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  houseOwner       Owner           @relation(fields: [ownerId], references: [id])
   ownerId          String
   RentRequest      Request[]
 
@@ -60,6 +58,21 @@ model House {
   HouseExtraCharge HouseExtraCharge[]
 
   @@map("houses")
+}
+
+model HousePost {
+  id               String        @id @default(uuid())
+  houseName        String
+  address          String
+  contact          String
+  gellary          String[]
+  details          String
+  category         HouseCategory
+  rentFee          Float
+  minBookingCharge Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model HouseExtraCharge {
@@ -118,11 +131,11 @@ model Owner {
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
 
-  House       House[]
-  Feedback    Feedback[]
+  houses      House[]
+  feedbacks    Feedback[]
   userId      String     @unique
-  RentRequest Request[]
-  Contract    Contract[]
+  rentRequest Request[]
+  contract    Contract[]
 
   @@map("owners")
 }
@@ -133,9 +146,9 @@ model Tenant {
   updatedAt   DateTime   @updatedAt
   user        User       @relation(fields: [userId], references: [id])
   userId      String     @unique
-  Feedback    Feedback[]
-  RentRequest Request[]
-  Contract    Contract[]
+  feedback    Feedback[]
+  rentRequest Request[]
+  contract    Contract[]
 
   @@map("tetants")
 }
@@ -242,6 +255,7 @@ enum HouseCategory {
   HOSTEL
   SHOP
   OFFICE
+  GARAGE
 }
 
 enum Role {
