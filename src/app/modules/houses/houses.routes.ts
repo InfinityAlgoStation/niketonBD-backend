@@ -21,5 +21,9 @@ router.patch(
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.OWNER),
   HouseController.updateHouse
 );
-
+router.delete(
+  '/:id',
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.OWNER),
+  HouseController.deleteHouse
+);
 export const HouseRoutes = router;

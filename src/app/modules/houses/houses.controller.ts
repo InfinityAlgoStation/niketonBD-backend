@@ -46,12 +46,25 @@ const getSingleHouse = catchAsync(async (req: Request, res: Response) => {
 const updateHouse = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
   const data = req.body;
-  const result = await HouseServices.updateHouse(id, data);
+  const { id: userId, role: userRole } = req.user as any;
+  const result = await HouseServices.updateHouse(id, data, userId, userRole);
 
   sendResponse<House>(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'House updated successfully !!',
+    data: result,
+  });
+});
+const deleteHouse = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const { id: userId, role: userRole } = req.user as any;
+  const result = await HouseServices.deleteHouse(id, userId, userRole);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'House delete successfully !!',
     data: result,
   });
 });
@@ -61,4 +74,5 @@ export const HouseController = {
   getAllHouse,
   getSingleHouse,
   updateHouse,
+  deleteHouse,
 };

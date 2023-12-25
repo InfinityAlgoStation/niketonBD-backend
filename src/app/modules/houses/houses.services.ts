@@ -100,14 +100,57 @@ const getSingleHouseDetails = async (id: string): Promise<House | null> => {
 
 const updateHouse = async (
   id: string,
-  data: Partial<House>
+  data: Partial<House>,
+  userId: string,
+  userRole: string
 ): Promise<House | null> => {
-  const isExist = await prisma.house.findUnique({ where: { id } });
+  const isExist = await prisma.house.findUnique({
+    where: { id },
+    include: { houseOwner: true },
+  });
   if (!isExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'House not exist !');
   }
 
+  if (
+    isExist?.houseOwner?.userId !== userId ||
+    userRole === 'ADMIN' ||
+    userRole === 'SUPERADMIN'
+  ) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'You are not able to make change !'
+    );
+  }
+
   const result = await prisma.house.update({ where: { id }, data });
+  return result;
+};
+
+const deleteHouse = async (
+  id: string,
+  userId: string,
+  userRole: string
+): Promise<House | null> => {
+  const isExist = await prisma.house.findUnique({
+    where: { id },
+    include: { houseOwner: true },
+  });
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'House not exist !');
+  }
+  if (
+    isExist?.houseOwner?.userId !== userId ||
+    userRole === 'ADMIN' ||
+    userRole === 'SUPERADMIN'
+  ) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'You are not able to make change !'
+    );
+  }
+
+  const result = await prisma.house.delete({ where: { id } });
   return result;
 };
 
@@ -116,4 +159,5 @@ export const HouseServices = {
   getAllHouse,
   getSingleHouseDetails,
   updateHouse,
+  deleteHouse,
 };
