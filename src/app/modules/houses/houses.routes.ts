@@ -33,9 +33,19 @@ router.post(
   HouseController.addAmenityHouse
 );
 router.post(
+  '/add-extraCharge',
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.OWNER),
+  HouseController.addExtraChargeHouse
+);
+router.post(
   '/remove-aminity',
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.OWNER),
   HouseController.removeAmenityHouse
+);
+router.post(
+  '/remove-extraCharge',
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.OWNER),
+  HouseController.removeExtraChargeHouse
 );
 
 export const HouseRoutes = router;

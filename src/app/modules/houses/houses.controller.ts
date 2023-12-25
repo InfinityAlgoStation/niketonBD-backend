@@ -82,7 +82,7 @@ const addAmenityHouse = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'House updated successfully !!',
+    message: 'Amenity add to house  successfully !!',
     data: result,
   });
 });
@@ -100,10 +100,47 @@ const removeAmenityHouse = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'House delete successfully !!',
+    message: 'Amenity delete from house successfully !!',
     data: result,
   });
 });
+
+const addExtraChargeHouse = catchAsync(async (req: Request, res: Response) => {
+  const { houseId, extraChargeId } = req.body;
+  const { id: userId, role: userRole } = req.user as any;
+  const result = await HouseServices.addHouseExtraCharge(
+    houseId,
+    extraChargeId,
+    userId,
+    userRole
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Add extra charge from house successfully !!',
+    data: result,
+  });
+});
+const removeExtraChargeHouse = catchAsync(
+  async (req: Request, res: Response) => {
+    const { houseId, extraChargeId } = req.body;
+    const { id: userId, role: userRole } = req.user as any;
+    const result = await HouseServices.removeHouseExtraCharge(
+      houseId,
+      extraChargeId,
+      userId,
+      userRole
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Remove extra charge from house successfully !!',
+      data: result,
+    });
+  }
+);
 
 export const HouseController = {
   createNew,
@@ -113,4 +150,6 @@ export const HouseController = {
   deleteHouse,
   addAmenityHouse,
   removeAmenityHouse,
+  addExtraChargeHouse,
+  removeExtraChargeHouse,
 };

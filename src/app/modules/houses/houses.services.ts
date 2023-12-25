@@ -113,11 +113,7 @@ const updateHouse = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'House not exist !');
   }
 
-  if (
-    isExist?.houseOwner?.userId !== userId ||
-    userRole === 'ADMIN' ||
-    userRole === 'SUPERADMIN'
-  ) {
+  if (isExist?.houseOwner?.userId !== userId && userRole === 'OWNER') {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
       'You are not able to make change !'
@@ -140,11 +136,8 @@ const deleteHouse = async (
   if (!isExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'House not exist !');
   }
-  if (
-    isExist?.houseOwner?.userId !== userId ||
-    userRole === 'ADMIN' ||
-    userRole === 'SUPERADMIN'
-  ) {
+
+  if (userRole === 'OWNER' && isExist?.houseOwner?.userId !== userId) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
       'You are not able to make change !'
@@ -177,24 +170,18 @@ const addHouseAmenity = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'Amenity not exist !');
   }
 
-  if (
-    isExist?.houseOwner?.userId !== userId ||
-    userRole === 'ADMIN' ||
-    userRole === 'SUPERADMIN'
-  ) {
+  if (isExist?.houseOwner?.userId !== userId && userRole === 'OWNER') {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
       'You are not able to make change !'
     );
   }
 
-  const result = await prisma.houseAmenity.create({
-    data: {
-      house: {
-        connect: { id: houseId },
-      },
-      amenity: {
-        connect: { id: amenityId },
+  const result = await prisma.houseAmenity.delete({
+    where: {
+      houseId_amenityId: {
+        houseId: houseId,
+        amenityId: amenityId,
       },
     },
   });
@@ -224,11 +211,7 @@ const removeAmenityHouse = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'Amenity not exist !');
   }
 
-  if (
-    isExist?.houseOwner?.userId !== userId ||
-    userRole === 'ADMIN' ||
-    userRole === 'SUPERADMIN'
-  ) {
+  if (isExist?.houseOwner?.userId !== userId && userRole === 'OWNER') {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
       'You are not able to make change !'
@@ -246,6 +229,90 @@ const removeAmenityHouse = async (
   return result;
 };
 
+const addHouseExtraCharge = async (
+  houseId: string,
+  extraChargeId: string,
+  userId: string,
+  userRole: string
+) => {
+  const isExist = await prisma.house.findUnique({
+    where: { id: houseId },
+    include: { houseOwner: true },
+  });
+
+  const isExtraChargeExist = await prisma.extraCharge.findUnique({
+    where: { id: extraChargeId },
+  });
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'House not exist !');
+  }
+
+  if (!isExtraChargeExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'ExtraCharge not exist !');
+  }
+
+  if (isExist?.houseOwner?.userId !== userId && userRole === 'OWNER') {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'You are not able to make change !'
+    );
+  }
+
+  const result = await prisma.houseExtraCharge.create({
+    data: {
+      house: {
+        connect: { id: houseId },
+      },
+      extraCharge: {
+        connect: { id: extraChargeId },
+      },
+    },
+  });
+
+  return result;
+};
+
+const removeHouseExtraCharge = async (
+  houseId: string,
+  extraChargeId: string,
+  userId: string,
+  userRole: string
+) => {
+  const isExist = await prisma.house.findUnique({
+    where: { id: houseId },
+    include: { houseOwner: true },
+  });
+
+  const isExtraChargeExist = await prisma.extraCharge.findUnique({
+    where: { id: extraChargeId },
+  });
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'House not exist !');
+  }
+
+  if (!isExtraChargeExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'ExtraCharge not exist !');
+  }
+
+  if (isExist?.houseOwner?.userId !== userId && userRole === 'OWNER') {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'You are not able to make change !'
+    );
+  }
+
+  const result = await prisma.houseExtraCharge.delete({
+    where: {
+      houseId_extraChargeId: {
+        houseId: houseId,
+        extraChargeId: extraChargeId,
+      },
+    },
+  });
+
+  return result;
+};
+
 export const HouseServices = {
   createNew,
   getAllHouse,
@@ -254,4 +321,6 @@ export const HouseServices = {
   deleteHouse,
   addHouseAmenity,
   removeAmenityHouse,
+  addHouseExtraCharge,
+  removeHouseExtraCharge,
 };
