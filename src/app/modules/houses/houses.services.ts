@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { House } from '@prisma/client';
 import httpStatus from 'http-status';
 import ApiError from '../../../errors/ApiError';
@@ -169,6 +170,19 @@ const addHouseAmenity = async (houseId: string, amenityId: string) => {
   return result;
 };
 
+const removeAmenityHouse = async (houseId: string, amenityId: string) => {
+  const result = await prisma.houseAmenity.delete({
+    where: {
+      houseId_amenityId: {
+        houseId: houseId,
+        amenityId: amenityId,
+      },
+    },
+  });
+
+  return result;
+};
+
 export const HouseServices = {
   createNew,
   getAllHouse,
@@ -176,4 +190,5 @@ export const HouseServices = {
   updateHouse,
   deleteHouse,
   addHouseAmenity,
+  removeAmenityHouse,
 };

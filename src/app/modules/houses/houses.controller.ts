@@ -81,6 +81,20 @@ const addAmenityHouse = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const removeAmenityHouse = catchAsync(async (req: Request, res: Response) => {
+  const { houseId, amenityId } = req.body;
+  // const { id: userId, role: userRole } = req.user as any;
+  // console.log(houseId, amenityId);
+
+  const result = await HouseServices.removeAmenityHouse(houseId, amenityId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'House delete successfully !!',
+    data: result,
+  });
+});
 
 export const HouseController = {
   createNew,
@@ -89,4 +103,5 @@ export const HouseController = {
   updateHouse,
   deleteHouse,
   addAmenityHouse,
+  removeAmenityHouse,
 };

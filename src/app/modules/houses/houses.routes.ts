@@ -28,5 +28,6 @@ router.delete(
 );
 
 router.post('/add-aminity', HouseController.addAmenityHouse);
+router.post('/remove-aminity', HouseController.removeAmenityHouse);
 
 export const HouseRoutes = router;
