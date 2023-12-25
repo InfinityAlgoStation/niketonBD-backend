@@ -155,7 +155,39 @@ const deleteHouse = async (
   return result;
 };
 
-const addHouseAmenity = async (houseId: string, amenityId: string) => {
+const addHouseAmenity = async (
+  houseId: string,
+  amenityId: string,
+  userId: string,
+  userRole: string
+) => {
+  const isExist = await prisma.house.findUnique({
+    where: { id: houseId },
+    include: { houseOwner: true },
+  });
+
+  const isAminityExist = await prisma.amenity.findUnique({
+    where: { id: amenityId },
+  });
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'House not exist !');
+  }
+
+  if (!isAminityExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Amenity not exist !');
+  }
+
+  if (
+    isExist?.houseOwner?.userId !== userId ||
+    userRole === 'ADMIN' ||
+    userRole === 'SUPERADMIN'
+  ) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'You are not able to make change !'
+    );
+  }
+
   const result = await prisma.houseAmenity.create({
     data: {
       house: {
@@ -170,7 +202,38 @@ const addHouseAmenity = async (houseId: string, amenityId: string) => {
   return result;
 };
 
-const removeAmenityHouse = async (houseId: string, amenityId: string) => {
+const removeAmenityHouse = async (
+  houseId: string,
+  amenityId: string,
+  userId: string,
+  userRole: string
+) => {
+  const isExist = await prisma.house.findUnique({
+    where: { id: houseId },
+    include: { houseOwner: true },
+  });
+
+  const isAminityExist = await prisma.amenity.findUnique({
+    where: { id: amenityId },
+  });
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'House not exist !');
+  }
+
+  if (!isAminityExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Amenity not exist !');
+  }
+
+  if (
+    isExist?.houseOwner?.userId !== userId ||
+    userRole === 'ADMIN' ||
+    userRole === 'SUPERADMIN'
+  ) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'You are not able to make change !'
+    );
+  }
   const result = await prisma.houseAmenity.delete({
     where: {
       houseId_amenityId: {

@@ -71,8 +71,13 @@ const deleteHouse = catchAsync(async (req: Request, res: Response) => {
 
 const addAmenityHouse = catchAsync(async (req: Request, res: Response) => {
   const { houseId, amenityId } = req.body;
-  // const { id: userId, role: userRole } = req.user as any;
-  const result = await HouseServices.addHouseAmenity(houseId, amenityId);
+  const { id: userId, role: userRole } = req.user as any;
+  const result = await HouseServices.addHouseAmenity(
+    houseId,
+    amenityId,
+    userId,
+    userRole
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -83,10 +88,14 @@ const addAmenityHouse = catchAsync(async (req: Request, res: Response) => {
 });
 const removeAmenityHouse = catchAsync(async (req: Request, res: Response) => {
   const { houseId, amenityId } = req.body;
-  // const { id: userId, role: userRole } = req.user as any;
-  // console.log(houseId, amenityId);
+  const { id: userId, role: userRole } = req.user as any;
 
-  const result = await HouseServices.removeAmenityHouse(houseId, amenityId);
+  const result = await HouseServices.removeAmenityHouse(
+    houseId,
+    amenityId,
+    userId,
+    userRole
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
