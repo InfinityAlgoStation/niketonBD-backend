@@ -16,5 +16,10 @@ router.post(
 
 router.get('/', HouseController.getAllHouse);
 router.get('/:id', HouseController.getSingleHouse);
+router.patch(
+  '/:id',
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.OWNER),
+  HouseController.updateHouse
+);
 
 export const HouseRoutes = router;

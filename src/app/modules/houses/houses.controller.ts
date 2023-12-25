@@ -36,10 +36,22 @@ const getAllHouse = catchAsync(async (req: Request, res: Response) => {
 const getSingleHouse = catchAsync(async (req: Request, res: Response) => {
   const result = await HouseServices.getSingleHouseDetails(req.params.id);
 
-  sendResponse<House>(res, {
+  sendResponse<House | null>(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'House retrieve successfully !!',
+    data: result,
+  });
+});
+const updateHouse = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const data = req.body;
+  const result = await HouseServices.updateHouse(id, data);
+
+  sendResponse<House>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'House updated successfully !!',
     data: result,
   });
 });
@@ -48,4 +60,5 @@ export const HouseController = {
   createNew,
   getAllHouse,
   getSingleHouse,
+  updateHouse,
 };

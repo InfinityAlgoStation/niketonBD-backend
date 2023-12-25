@@ -98,8 +98,22 @@ const getSingleHouseDetails = async (id: string): Promise<House | null> => {
   return result;
 };
 
+const updateHouse = async (
+  id: string,
+  data: Partial<House>
+): Promise<House | null> => {
+  const isExist = await prisma.house.findUnique({ where: { id } });
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'House not exist !');
+  }
+
+  const result = await prisma.house.update({ where: { id }, data });
+  return result;
+};
+
 export const HouseServices = {
   createNew,
   getAllHouse,
   getSingleHouseDetails,
+  updateHouse,
 };
