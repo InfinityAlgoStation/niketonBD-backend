@@ -17,7 +17,7 @@ CREATE TYPE "TenantType" AS ENUM ('SUBLATE', 'BACHELOR', 'FAMILY');
 CREATE TYPE "HouseStatus" AS ENUM ('AVAILABLE', 'BOOKED');
 
 -- CreateEnum
-CREATE TYPE "HouseCategory" AS ENUM ('FLAT', 'SINGLE_ROOM', 'HOSTEL', 'SHOP', 'OFFICE');
+CREATE TYPE "HouseCategory" AS ENUM ('FLAT', 'SINGLE_ROOM', 'HOSTEL', 'SHOP', 'OFFICE', 'GARAGE');
 
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('SUPERADMIN', 'ADMIN', 'OWNER', 'TENANT');
@@ -37,8 +37,6 @@ CREATE TABLE "extraCharge" (
 CREATE TABLE "amenities" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "icon" TEXT NOT NULL,
-    "status" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

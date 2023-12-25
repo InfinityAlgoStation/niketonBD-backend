@@ -154,10 +154,26 @@ const deleteHouse = async (
   return result;
 };
 
+const addHouseAmenity = async (houseId: string, amenityId: string) => {
+  const result = await prisma.houseAmenity.create({
+    data: {
+      house: {
+        connect: { id: houseId },
+      },
+      amenity: {
+        connect: { id: amenityId },
+      },
+    },
+  });
+
+  return result;
+};
+
 export const HouseServices = {
   createNew,
   getAllHouse,
   getSingleHouseDetails,
   updateHouse,
   deleteHouse,
+  addHouseAmenity,
 };
