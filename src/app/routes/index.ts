@@ -5,6 +5,7 @@ import { ExtraChargeRoutes } from '../modules/extraCharge/extraCharge.routes';
 import { HouseRoutes } from '../modules/houses/houses.routes';
 import { OwnerRotes } from '../modules/owners/ownner.routes';
 import { UserRoutes } from '../modules/users/users.routes';
+import { HousePostRoutes } from '../modules/HousePost/housePost.route';
 
 const router = express.Router();
 
@@ -29,6 +30,10 @@ const moduleRoutes = [
   {
     path: '/houses',
     route: HouseRoutes,
+  },
+  {
+    path: '/housePost',
+    route: HousePostRoutes,
   },
   {
     path: '/owners',
