@@ -66,10 +66,10 @@ model HousePost {
   address          String
   contact          String
   gellary          String[]
-  details          String
+  details          String?
   category         HouseCategory
-  rentFee          Float
-  minBookingCharge Int
+  rentFee          Float?
+  minBookingCharge Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -132,7 +132,7 @@ model Owner {
   user      User     @relation(fields: [userId], references: [id])
 
   houses      House[]
-  feedbacks    Feedback[]
+  feedbacks   Feedback[]
   userId      String     @unique
   rentRequest Request[]
   contract    Contract[]
