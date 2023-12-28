@@ -75,7 +75,19 @@ const getAllHouse = async (
         : {
             createdAt: 'desc',
           },
-    include: { houseOwner: true },
+    include: {
+      houseOwner: true,
+      HouseAmenity: {
+        include: {
+          amenity: true,
+        },
+      },
+      HouseExtraCharge: {
+        include: {
+          extraCharge: true,
+        },
+      },
+    },
   });
 
   const total = await prisma.house.count({

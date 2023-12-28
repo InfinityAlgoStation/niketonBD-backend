@@ -11,5 +11,19 @@ const requestBookHouseValidation = z.object({
     tenantId: z.string({ required_error: 'Tenant id is required' }),
   }),
 });
+const requestLeaveHouseValidation = z.object({
+  body: z.object({
+    requestType: z.enum(['LEAVE'], {
+      required_error: 'Request Type is required',
+    }),
+    requestStatus: z.string().optional(),
+    houseId: z.string({ required_error: 'House id is required ' }),
+    ownerId: z.string({ required_error: 'Owner id is required' }),
+    tenantId: z.string({ required_error: 'Tenant id is required' }),
+  }),
+});
 
-export const TenantZodValidation = { requestBookHouseValidation };
+export const TenantZodValidation = {
+  requestBookHouseValidation,
+  requestLeaveHouseValidation,
+};

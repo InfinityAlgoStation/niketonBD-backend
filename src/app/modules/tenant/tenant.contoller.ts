@@ -11,11 +11,23 @@ const houseBookRequest = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Request sent !',
+    message: 'Booking request sent !',
+    data: result,
+  });
+});
+const houseLeaveRequest = catchAsync(async (req: Request, res: Response) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { id } = req.user as any;
+  const result = await TenantService.requestLeaveHouse(req.body, id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Leaving request sent !',
     data: result,
   });
 });
 
 export const TenantController = {
   houseBookRequest,
+  houseLeaveRequest,
 };

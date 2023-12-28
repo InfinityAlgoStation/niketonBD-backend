@@ -13,5 +13,11 @@ router.post(
   auth(ENUM_USER_ROLE.TENANT),
   TenantController.houseBookRequest
 );
+router.post(
+  '/request/leave',
+  validateRequest(TenantZodValidation.requestLeaveHouseValidation),
+  auth(ENUM_USER_ROLE.TENANT),
+  TenantController.houseLeaveRequest
+);
 
 export const TenantRoute = router;
