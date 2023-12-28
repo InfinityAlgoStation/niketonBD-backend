@@ -75,6 +75,7 @@ const getAllHouse = async (
         : {
             createdAt: 'desc',
           },
+    include: { houseOwner: true },
   });
 
   const total = await prisma.house.count({
@@ -92,7 +93,10 @@ const getAllHouse = async (
 };
 
 const getSingleHouseDetails = async (id: string): Promise<House | null> => {
-  const result = await prisma.house.findUnique({ where: { id } });
+  const result = await prisma.house.findUnique({
+    where: { id },
+    include: { houseOwner: true },
+  });
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, 'House details not found');
   }
@@ -177,11 +181,13 @@ const addHouseAmenity = async (
     );
   }
 
-  const result = await prisma.houseAmenity.delete({
-    where: {
-      houseId_amenityId: {
-        houseId: houseId,
-        amenityId: amenityId,
+  const result = await prisma.houseAmenity.create({
+    data: {
+      house: {
+        connect: { id: houseId },
+      },
+      amenity: {
+        connect: { id: amenityId },
       },
     },
   });
