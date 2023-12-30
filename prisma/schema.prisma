@@ -189,16 +189,16 @@ model Feedback {
 }
 
 model Request {
-  id            String      @id @default(uuid())
-  requestStatus String      @default("PENDING")
+  id            String        @id @default(uuid())
+  requestStatus RequestStatus @default(PENDING)
   requestType   RequestType
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  house         House       @relation(fields: [houseId], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  house         House         @relation(fields: [houseId], references: [id])
   houseId       String
-  owner         Owner       @relation(fields: [ownerId], references: [id])
+  owner         Owner         @relation(fields: [ownerId], references: [id])
   ownerId       String
-  tenant        Tenant      @relation(fields: [tenantId], references: [id])
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
   tenantId      String
 
   @@map("request")
@@ -225,6 +225,12 @@ enum ContractStatus {
 enum RequestType {
   BOOKING
   LEAVE
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  CANCEL
 }
 
 enum FurnishingType {
