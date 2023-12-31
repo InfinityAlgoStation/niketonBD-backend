@@ -39,15 +39,26 @@ router.post(
   RequestController.houseLeaveRequest
 );
 router.patch(
-  '/updateStatus/:id',
-  validateRequest(RequestZodValidation.requestStatusUpdateValidation),
+  '/updateStatus/booking/:id',
+  validateRequest(RequestZodValidation.bookingRequestStatusUpdateValidation),
   auth(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
     ENUM_USER_ROLE.OWNER,
     ENUM_USER_ROLE.TENANT
   ),
-  RequestController.updateHouseRequest
+  RequestController.updateBookHouseRequest
+);
+router.patch(
+  '/updateStatus/leave/:id',
+  validateRequest(RequestZodValidation.leaveRequestStatusUpdateValidation),
+  auth(
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN,
+    ENUM_USER_ROLE.OWNER,
+    ENUM_USER_ROLE.TENANT
+  ),
+  RequestController.updateLeaveHouseRequest
 );
 router.delete(
   '/:id',

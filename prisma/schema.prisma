@@ -56,6 +56,8 @@ model House {
 
   HouseAmenity     HouseAmenity[]
   HouseExtraCharge HouseExtraCharge[]
+  Feedback         Feedback[]
+  Contract         Contract[]
 
   @@map("houses")
 }
@@ -180,10 +182,12 @@ model Feedback {
   description String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  owner       Owner    @relation(fields: [ownerId], references: [id])
-  ownerId     String
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
   tenantId    String
+  house       House    @relation(fields: [houseId], references: [id])
+  houseId     String
+  Owner       Owner?   @relation(fields: [ownerId], references: [id])
+  ownerId     String?
 
   @@map("feedbacks")
 }
@@ -213,6 +217,8 @@ model Contract {
   ownerId   String
   tenant    Tenant         @relation(fields: [tenantId], references: [id])
   tenantId  String
+  house     House          @relation(fields: [houseId], references: [id])
+  houseId   String
 
   @@map("contracts")
 }

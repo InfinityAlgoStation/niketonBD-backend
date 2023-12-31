@@ -23,7 +23,14 @@ const requestLeaveHouseValidation = z.object({
   }),
 });
 
-const requestStatusUpdateValidation = z.object({
+const bookingRequestStatusUpdateValidation = z.object({
+  body: z.object({
+    requestStatus: z.enum(['CANCEL', 'ACCEPTED'], {
+      required_error: 'Request status is required !',
+    }),
+  }),
+});
+const leaveRequestStatusUpdateValidation = z.object({
   body: z.object({
     requestStatus: z.enum(['CANCEL', 'ACCEPTED'], {
       required_error: 'Request status is required !',
@@ -34,5 +41,6 @@ const requestStatusUpdateValidation = z.object({
 export const RequestZodValidation = {
   requestBookHouseValidation,
   requestLeaveHouseValidation,
-  requestStatusUpdateValidation,
+  bookingRequestStatusUpdateValidation,
+  leaveRequestStatusUpdateValidation,
 };

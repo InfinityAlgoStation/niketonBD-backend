@@ -32,7 +32,21 @@ const requestBookHouse = async (
   if (tenantId !== isTenantExist?.tenant?.id) {
     throw new ApiError(httpStatus.FORBIDDEN, 'You are not valid user');
   }
+  const findContract = await prisma.contract.findMany({
+    where: {
+      status: 'RUNNING',
+      ownerId: ownerId,
+      tenantId: tenantId,
+      houseId: houseId,
+    },
+  });
 
+  if (findContract.length > 0) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'You are already tenant of this house'
+    );
+  }
   const result = await prisma.request.create({
     data: {
       house: {
@@ -44,7 +58,7 @@ const requestBookHouse = async (
       tenant: {
         connect: { id: tenantId },
       },
-      requestStatus: payload.requestStatus,
+      // requestStatus: payload.requestStatus,
       requestType: 'BOOKING',
     },
   });
@@ -82,6 +96,22 @@ const requestLeaveHouse = async (
     throw new ApiError(httpStatus.FORBIDDEN, 'You are not valid user');
   }
 
+  const findContract = await prisma.contract.findMany({
+    where: {
+      status: 'RUNNING',
+      ownerId: ownerId,
+      tenantId: tenantId,
+      houseId: houseId,
+    },
+  });
+
+  if (findContract.length === 0) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'Currently you are not tenant of this house'
+    );
+  }
+
   const result = await prisma.request.create({
     data: {
       house: {
@@ -100,16 +130,127 @@ const requestLeaveHouse = async (
 
   return result;
 };
-
-const updateHouseRequestStatus = async (id: string, data: Partial<Request>) => {
+const updateBookingRequestStatus = async (
+  userRole: string,
+  id: string,
+  data: Partial<Request>
+) => {
   const isExist = await prisma.request.findUnique({ where: { id } });
   if (!isExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Request not found');
   }
-  console.log(data);
 
-  const result = await prisma.request.update({ where: { id }, data: data });
-  return result;
+  if (data?.requestStatus === 'ACCEPTED') {
+    if (userRole === 'TENANT') {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        'You are not able to accept request'
+      );
+    }
+    const result = await prisma.$transaction(async prismaClient => {
+      const changeRequestStatus = await prismaClient.request.update({
+        where: { id },
+        data: { requestStatus: 'ACCEPTED' },
+        include: {
+          house: true,
+          owner: true,
+          tenant: true,
+        },
+      });
+
+      if (!changeRequestStatus) {
+        throw new ApiError(
+          httpStatus.NOT_MODIFIED,
+          'Request status failed to change '
+        );
+      }
+
+      const createContract = await prismaClient.contract.create({
+        data: {
+          status: 'RUNNING',
+          owner: { connect: { id: changeRequestStatus.ownerId } },
+          tenant: { connect: { id: changeRequestStatus.tenantId } },
+          house: { connect: { id: changeRequestStatus.houseId } },
+        },
+      });
+      if (!createContract) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create contract');
+      }
+
+      return changeRequestStatus;
+    });
+    return result;
+  } else {
+    const result = await prisma.request.update({
+      where: { id },
+      data: { requestStatus: 'CANCEL' },
+    });
+
+    return result;
+  }
+};
+
+const updateLeaveRequestStatus = async (
+  userRole: string,
+  id: string,
+  data: Partial<Request>
+) => {
+  const isExist = await prisma.request.findUnique({ where: { id } });
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Request not found');
+  }
+
+  if (data?.requestStatus === 'ACCEPTED') {
+    if (userRole === 'TENANT') {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        'You are not able to accept request'
+      );
+    }
+
+    const result = await prisma.$transaction(async prismaClient => {
+      const changeStatus = await prismaClient.request.update({
+        where: { id },
+        data: { requestStatus: 'ACCEPTED' },
+      });
+
+      if (!changeStatus) {
+        throw new ApiError(
+          httpStatus.NOT_MODIFIED,
+          'Request status failed to change '
+        );
+      }
+
+      const findContract = await prismaClient.contract.findMany({
+        where: {
+          status: 'RUNNING',
+          ownerId: isExist?.ownerId,
+          tenantId: isExist?.tenantId,
+          houseId: isExist?.houseId,
+        },
+      });
+      const updateContract = await prismaClient.contract.update({
+        where: {
+          id: findContract[0].id,
+        },
+
+        data: { status: 'END' },
+      });
+      if (!updateContract) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to end contract');
+      }
+
+      return changeStatus;
+    });
+    return result;
+  } else {
+    const result = await prisma.request.update({
+      where: { id },
+      data: { requestStatus: 'CANCEL' },
+    });
+
+    return result;
+  }
 };
 
 const getAllRequest = async (userId: string, userRole: string) => {
@@ -197,7 +338,8 @@ const requestDelete = async (requestId: string) => {
 export const RequestService = {
   requestBookHouse,
   requestLeaveHouse,
-  updateHouseRequestStatus,
+  updateBookingRequestStatus,
+  updateLeaveRequestStatus,
   getAllRequest,
   getSingleRequest,
   requestDelete,
