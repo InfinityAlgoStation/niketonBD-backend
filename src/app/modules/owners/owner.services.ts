@@ -31,6 +31,8 @@ const getSingleOwnerDetails = async (id: string): Promise<Owner | null> => {
   return result;
 };
 
+/* update house request */
+
 export const OwnersServices = {
   getSingleOwnerDetails,
 };

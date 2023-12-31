@@ -23,7 +23,16 @@ const requestLeaveHouseValidation = z.object({
   }),
 });
 
-export const TenantZodValidation = {
+const requestStatusUpdateValidation = z.object({
+  body: z.object({
+    requestStatus: z.enum(['CANCEL', 'ACCEPTED'], {
+      required_error: 'Request status is required !',
+    }),
+  }),
+});
+
+export const RequestZodValidation = {
   requestBookHouseValidation,
   requestLeaveHouseValidation,
+  requestStatusUpdateValidation,
 };
