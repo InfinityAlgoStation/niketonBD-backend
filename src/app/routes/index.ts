@@ -2,6 +2,7 @@ import express from 'express';
 import { HousePostRoutes } from '../modules/HousePost/housePost.route';
 import { AmenityRoutes } from '../modules/amenity/amenity.routes';
 import { AuthRoutes } from '../modules/auth/auth.route';
+import { ContractRoutes } from '../modules/contract/contract.route';
 import { ExtraChargeRoutes } from '../modules/extraCharge/extraCharge.routes';
 import { HouseRoutes } from '../modules/houses/houses.routes';
 import { OwnerRotes } from '../modules/owners/ownner.routes';
@@ -43,6 +44,10 @@ const moduleRoutes = [
   {
     path: '/request',
     route: RequestRoute,
+  },
+  {
+    path: '/contract',
+    route: ContractRoutes,
   },
 ];
 
