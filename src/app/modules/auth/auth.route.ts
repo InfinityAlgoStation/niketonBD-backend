@@ -7,7 +7,21 @@ import { AuthValidation } from './auth.validation';
 
 const router = express.Router();
 
-router.post('/register', AuthController.userRegistration);
+router.post(
+  '/register',
+  validateRequest(AuthValidation.makeUserZodSchema),
+  AuthController.userRegistration
+);
+router.post(
+  '/registerAdmin',
+  auth(ENUM_USER_ROLE.SUPER_ADMIN),
+  AuthController.superAdminMakeAdmin
+);
+router.post(
+  '/register_SAdmin',
+  validateRequest(AuthValidation.makeSuperAdminZodSchema),
+  AuthController.userRegistration
+);
 router.post(
   '/login',
   validateRequest(AuthValidation.loginZodSchema),
@@ -56,4 +70,5 @@ router.post(
   '/forgetPasswordSetNewPassword',
   AuthController.forgetPasswordSetNewPassword
 );
+
 export const AuthRoutes = router;

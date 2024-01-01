@@ -20,7 +20,10 @@ import {
   IRefreshTokenResponse,
 } from './auth.interface';
 
-const userRegistration = async (payload: User): Promise<User> => {
+const userRegistration = async (
+  payload: User,
+  passKey: string
+): Promise<User> => {
   const { password, ...othersData } = payload;
   //check email formate validity
   if (!validateEmail(othersData.email)) {
@@ -58,6 +61,15 @@ const userRegistration = async (payload: User): Promise<User> => {
         data: { userId: createdUser.id },
       });
     } else if (othersData?.role === 'SUPERADMIN') {
+      const savedPassKey = config.sAdminPassKey;
+      console.log(savedPassKey, passKey);
+
+      if (savedPassKey !== passKey) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          'Please provide valid passkey'
+        );
+      }
       relatedModel = await prismaClient.superAdmin.create({
         data: { userId: createdUser.id },
       });
@@ -397,6 +409,78 @@ const forgetPasswordSetNewPassword = async (
   }
 };
 
+const superAdminMakeAdmin = async (
+  userId: string,
+  userRole: string,
+  payload: User
+) => {
+  if (userRole !== 'SUPERADMIN') {
+    throw new ApiError(httpStatus.FORBIDDEN, 'You are not Super admin');
+  }
+  const isSAdminExist = await prisma.superAdmin.findUnique({
+    where: { userId: userId },
+  });
+  if (!isSAdminExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Super Admin not found');
+  }
+
+  const { password, ...othersData } = payload;
+  //check email formate validity
+  if (!validateEmail(othersData.email)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Email formate is not valid');
+  }
+
+  // password validity check
+  const passwordValidity = checkPasswordStrength(othersData.email, password);
+  if (!passwordValidity.validity) {
+    throw new ApiError(httpStatus.BAD_REQUEST, passwordValidity.msg);
+  }
+
+  // Start a Prisma transaction
+  const result = await prisma.$transaction(async prismaClient => {
+    // Encrypt password
+    const encryptedPassword = await encryptPassword(password);
+
+    // Create user with encrypted password
+    const createdUser = await prismaClient.user.create({
+      data: { ...othersData, password: encryptedPassword },
+    });
+
+    if (!createdUser?.email) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Admin not created');
+    }
+
+    // Create Owner or Tenant based on the role
+    const relatedModel = await prismaClient.admin.create({
+      data: { userId: createdUser?.id, superAdminId: isSAdminExist?.id },
+    });
+
+    if (!relatedModel?.userId) {
+      // If the related model is not created successfully, throw an error to roll back the transaction
+      throw new Error('Admin model not created');
+    }
+
+    // Send email confirmation
+    const payload1: IEmailInfo = {
+      from: `${config.email_host.user}`,
+      to: createdUser.email,
+      subject: 'Registration Done',
+      text: 'Welcome to Niketon BD',
+      html: '<b><h1>Niketon BD</h1></b>',
+    };
+
+    const emailSendResult = await sentEmail(payload1);
+    if (emailSendResult.accepted.length === 0) {
+      // If email sending fails, throw an error to roll back the transaction
+      throw new Error('Email send failed');
+    }
+
+    return { ...createdUser, admin: relatedModel };
+  });
+
+  return result;
+};
+
 export const AuthServices = {
   userRegistration,
   userLogin,
@@ -407,4 +491,5 @@ export const AuthServices = {
   forgetPasswordOTPSend,
   forgetPasswordOTPVerify,
   forgetPasswordSetNewPassword,
+  superAdminMakeAdmin,
 };
