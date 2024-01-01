@@ -8,6 +8,7 @@ import { HouseRoutes } from '../modules/houses/houses.routes';
 import { OwnerRotes } from '../modules/owners/ownner.routes';
 import { RequestRoute } from '../modules/request/request.route';
 import { UserRoutes } from '../modules/users/users.routes';
+import { FeedbackRoutes } from '../modules/feedback/feedback.route';
 
 const router = express.Router();
 
@@ -48,6 +49,10 @@ const moduleRoutes = [
   {
     path: '/contract',
     route: ContractRoutes,
+  },
+  {
+    path: '/feedback',
+    route: FeedbackRoutes,
   },
 ];
 

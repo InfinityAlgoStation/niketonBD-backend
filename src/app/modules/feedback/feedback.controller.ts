@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { Feedback } from '@prisma/client';
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { FeedbackService } from './feedback.service';
-import { Feedback } from '@prisma/client';
 
 const createNew = catchAsync(async (req: Request, res: Response) => {
   const result = await FeedbackService.createNew(req.body);
@@ -18,7 +18,8 @@ const createNew = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAll = catchAsync(async (req: Request, res: Response) => {
-  const result = await FeedbackService.getAll();
+  const { id, role } = req.user as any;
+  const result = await FeedbackService.getAll(id, role);
   sendResponse<Feedback[]>(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -38,7 +39,8 @@ const getSingle = catchAsync(async (req: Request, res: Response) => {
 const updateSingle = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const data = req.body;
-  const result = await FeedbackService.updateSingle(id, data);
+  const { id: userId, role } = req.user as any;
+  const result = await FeedbackService.updateSingle(id, data, userId, role);
   sendResponse<Feedback>(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -49,8 +51,8 @@ const updateSingle = catchAsync(async (req: Request, res: Response) => {
 
 const deleteSingle = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const data = req.body;
-  const result = await FeedbackService.updateSingle(id, data);
+  const { id: userId, role } = req.user as any;
+  const result = await FeedbackService.deleteSingle(id, userId, role);
   sendResponse<Feedback>(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -59,7 +61,7 @@ const deleteSingle = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const ExtraChargeController = {
+export const FeedbackController = {
   createNew,
   getAll,
   getSingle,
