@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import catchAsync from '../../../shared/catchAsync';
@@ -26,19 +27,42 @@ const houseLeaveRequest = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-const updateHouseRequest = catchAsync(async (req: Request, res: Response) => {
-  const result = await RequestService.updateHouseRequestStatus(
-    req.params.id,
-    req.body
-  );
+const updateBookHouseRequest = catchAsync(
+  async (req: Request, res: Response) => {
+    const { role: userRole } = req.user as any;
+    const result = await RequestService.updateBookingRequestStatus(
+      userRole,
+      req.params.id,
+      req.body
+    );
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'Status updated ',
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Status updated ',
+      data: result,
+    });
+  }
+);
+
+const updateLeaveHouseRequest = catchAsync(
+  async (req: Request, res: Response) => {
+    const { role: userRole } = req.user as any;
+    const result = await RequestService.updateLeaveRequestStatus(
+      userRole,
+      req.params.id,
+      req.body
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Status updated ',
+      data: result,
+    });
+  }
+);
+
 const getAllRequest = catchAsync(async (req: Request, res: Response) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { id, role } = req.user as any;
@@ -78,7 +102,8 @@ const requestDelete = catchAsync(async (req: Request, res: Response) => {
 export const RequestController = {
   houseBookRequest,
   houseLeaveRequest,
-  updateHouseRequest,
+  updateBookHouseRequest,
+  updateLeaveHouseRequest,
   getAllRequest,
   getSingleRequest,
   requestDelete,

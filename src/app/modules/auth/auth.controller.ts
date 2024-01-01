@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { User } from '@prisma/client';
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
@@ -8,7 +9,8 @@ import { ILoginUserResponse, IRefreshTokenResponse } from './auth.interface';
 import { AuthServices } from './auth.service';
 
 const userRegistration = catchAsync(async (req: Request, res: Response) => {
-  const result = await AuthServices.userRegistration(req.body);
+  const { passKey, ...othersData } = req.body;
+  const result = await AuthServices.userRegistration(othersData, passKey);
 
   sendResponse<User>(res, {
     statusCode: httpStatus.OK,
@@ -128,6 +130,18 @@ const forgetPasswordSetNewPassword = catchAsync(
   }
 );
 
+const superAdminMakeAdmin = catchAsync(async (req: Request, res: Response) => {
+  const { id: userId, role: userRole } = req.user as any;
+  const data = req.body;
+  const result = await AuthServices.superAdminMakeAdmin(userId, userRole, data);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Admin created',
+    data: result,
+  });
+});
+
 export const AuthController = {
   userRegistration,
   userLogin,
@@ -138,4 +152,5 @@ export const AuthController = {
   forgetPasswordOTPSend,
   forgetPasswordOTPVerify,
   forgetPasswordSetNewPassword,
+  superAdminMakeAdmin,
 };

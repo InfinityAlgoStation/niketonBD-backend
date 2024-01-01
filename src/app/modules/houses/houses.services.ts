@@ -87,6 +87,7 @@ const getAllHouse = async (
           extraCharge: true,
         },
       },
+      Feedback: true,
     },
   });
 
@@ -107,7 +108,20 @@ const getAllHouse = async (
 const getSingleHouseDetails = async (id: string): Promise<House | null> => {
   const result = await prisma.house.findUnique({
     where: { id },
-    include: { houseOwner: true },
+    include: {
+      houseOwner: true,
+      HouseAmenity: {
+        include: {
+          amenity: true,
+        },
+      },
+      HouseExtraCharge: {
+        include: {
+          extraCharge: true,
+        },
+      },
+      Feedback: true,
+    },
   });
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, 'House details not found');

@@ -20,8 +20,39 @@ const changePasswordZodSchema = z.object({
   }),
 });
 
+const makeSuperAdminZodSchema = z.object({
+  body: z.object({
+    userName: z.string({ required_error: 'User name is required' }),
+    email: z.string({ required_error: 'Email is required' }),
+    password: z.string({ required_error: 'Password is required' }),
+    role: z.enum(['SUPERADMIN'], { required_error: 'Role is required' }),
+    passKey: z.string({
+      required_error: 'Provide valid secret passKey',
+    }),
+  }),
+});
+const makeAdminZodSchema = z.object({
+  body: z.object({
+    userName: z.string({ required_error: 'User name is required' }),
+    email: z.string({ required_error: 'Email is required' }),
+    password: z.string({ required_error: 'Password is required' }),
+    role: z.enum(['ADMIN'], { required_error: 'Role is required' }),
+  }),
+});
+const makeUserZodSchema = z.object({
+  body: z.object({
+    userName: z.string({ required_error: 'User name is required' }),
+    email: z.string({ required_error: 'Email is required' }),
+    password: z.string({ required_error: 'Password is required' }),
+    role: z.enum(['OWNER', 'TENANT'], { required_error: 'Role is required' }),
+  }),
+});
+
 export const AuthValidation = {
   loginZodSchema,
   refreshTokenZodSchema,
   changePasswordZodSchema,
+  makeUserZodSchema,
+  makeAdminZodSchema,
+  makeSuperAdminZodSchema,
 };

@@ -32,12 +32,12 @@ model Amenity {
 }
 
 model House {
-  id               String          @id @default(uuid())
+  id               String             @id @default(uuid())
   houseName        String
   address          String
   category         HouseCategory
   tenantType       TenantType
-  quntity          Int?            @default(1)
+  quntity          Int?               @default(1)
   rentFee          Float
   furnishing       FurnishingType?
   parking          Boolean?
@@ -46,16 +46,17 @@ model House {
   gellary          String[]
   shortVideo       String?
   rules            String?
-  status           HouseStatus     @default(AVAILABLE)
+  status           HouseStatus        @default(AVAILABLE)
   details          String?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  houseOwner       Owner           @relation(fields: [ownerId], references: [id])
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  houseOwner       Owner              @relation(fields: [ownerId], references: [id])
   ownerId          String
   RentRequest      Request[]
-
   HouseAmenity     HouseAmenity[]
   HouseExtraCharge HouseExtraCharge[]
+  Feedback         Feedback[]
+  Contract         Contract[]
 
   @@map("houses")
 }
@@ -121,6 +122,7 @@ model User {
   superAdmin SuperAdmin?
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
+  Admin      Admin?
 
   @@map("users")
 }
@@ -153,16 +155,18 @@ model Tenant {
   @@map("tetants")
 }
 
-// model Admin {
-//   id           String   @id @default(uuid())
-//   makeBy       String
-//   user
-//   createdAt    DateTime @default(now())
-//   updatedAt    DateTime @updatedAt
-//   superAdminId String
+model Admin {
+  id           String     @id @default(uuid())
+  madeBy       SuperAdmin @relation(fields: [superAdminId], references: [id])
+  superAdminId String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
-//   @@map("admin")
-// }
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  @@map("admin")
+}
 
 model SuperAdmin {
   id        String   @id @default(uuid())
@@ -170,20 +174,23 @@ model SuperAdmin {
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
   userId    String   @unique
+  Admin     Admin[]
 
   @@map("superAdmin")
 }
 
 model Feedback {
-  id          String   @id @default(uuid())
-  title       String
-  description String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  owner       Owner    @relation(fields: [ownerId], references: [id])
-  ownerId     String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  tenantId    String
+  id        String   @id @default(uuid())
+  rating    Float
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  house     House    @relation(fields: [houseId], references: [id])
+  houseId   String
+  Owner     Owner?   @relation(fields: [ownerId], references: [id])
+  ownerId   String?
 
   @@map("feedbacks")
 }
@@ -213,6 +220,8 @@ model Contract {
   ownerId   String
   tenant    Tenant         @relation(fields: [tenantId], references: [id])
   tenantId  String
+  house     House          @relation(fields: [houseId], references: [id])
+  houseId   String
 
   @@map("contracts")
 }
