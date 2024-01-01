@@ -9,6 +9,7 @@ import { OwnerRotes } from '../modules/owners/ownner.routes';
 import { RequestRoute } from '../modules/request/request.route';
 import { UserRoutes } from '../modules/users/users.routes';
 import { FeedbackRoutes } from '../modules/feedback/feedback.route';
+import { SuperAdminRoutes } from '../modules/superAdmin/superAdmin.route';
 
 const router = express.Router();
 
@@ -53,6 +54,10 @@ const moduleRoutes = [
   {
     path: '/feedback',
     route: FeedbackRoutes,
+  },
+  {
+    path: '/sadmin',
+    route: SuperAdminRoutes,
   },
 ];
 
