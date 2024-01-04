@@ -76,7 +76,11 @@ const getAllHouse = async (
             createdAt: 'desc',
           },
     include: {
-      houseOwner: true,
+      houseOwner: {
+        include: {
+          user: true,
+        },
+      },
       HouseAmenity: {
         include: {
           amenity: true,
@@ -109,7 +113,11 @@ const getSingleHouseDetails = async (id: string): Promise<House | null> => {
   const result = await prisma.house.findUnique({
     where: { id },
     include: {
-      houseOwner: true,
+      houseOwner: {
+        include: {
+          user: true,
+        },
+      },
       HouseAmenity: {
         include: {
           amenity: true,

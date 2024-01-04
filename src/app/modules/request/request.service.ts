@@ -256,7 +256,10 @@ const updateLeaveRequestStatus = async (
 const getAllRequest = async (userId: string, userRole: string) => {
   const isExist = await prisma.user.findUnique({
     where: { id: userId },
-    include: { tenant: true, owner: true },
+    include: {
+      tenant: { include: { user: true } },
+      owner: { include: { user: true } },
+    },
   });
   if (!isExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
