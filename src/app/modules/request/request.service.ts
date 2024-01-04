@@ -266,19 +266,31 @@ const getAllRequest = async (userId: string, userRole: string) => {
   }
   if (userRole === 'SUPERADMIN' || userRole === 'ADMIN') {
     const result = await prisma.request.findMany({
-      include: { owner: true, tenant: true, house: true },
+      include: {
+        owner: { include: { user: true } },
+        tenant: { include: { user: true } },
+        house: true,
+      },
     });
     return result;
   } else if (userRole === 'OWNER') {
     const result = await prisma.request.findMany({
       where: { ownerId: isExist?.owner?.id },
-      include: { owner: true, tenant: true, house: true },
+      include: {
+        owner: { include: { user: true } },
+        tenant: { include: { user: true } },
+        house: true,
+      },
     });
     return result;
   } else {
     const result = await prisma.request.findMany({
       where: { tenantId: isExist?.tenant?.id },
-      include: { owner: true, tenant: true, house: true },
+      include: {
+        owner: { include: { user: true } },
+        tenant: { include: { user: true } },
+        house: true,
+      },
     });
     return result;
   }
