@@ -12,8 +12,8 @@ app.use(cors({ credentials: true }));
 app.use(cookieParser());
 
 //parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ limit: '20mb', extended: true }));
 
 // test routes
 app.get('/', async (req: Request, res: Response) => {
