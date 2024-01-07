@@ -48,8 +48,8 @@ const updateSingle = catchAsync(async (req: Request, res: Response) => {
 
 const deleteSingle = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const data = req.body;
-  const result = await AmenityServices.updateSingle(id, data);
+
+  const result = await AmenityServices.deleteSingle(id);
   sendResponse<Amenity>(res, {
     statusCode: httpStatus.OK,
     success: true,
