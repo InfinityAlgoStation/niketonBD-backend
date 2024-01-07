@@ -25,6 +25,7 @@ const userRegistration = async (
   passKey: string
 ): Promise<User> => {
   const { password, ...othersData } = payload;
+
   //check email formate validity
   if (!validateEmail(othersData.email)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email formate is not valid');
@@ -35,77 +36,85 @@ const userRegistration = async (
   if (!passwordValidity.validity) {
     throw new ApiError(httpStatus.BAD_REQUEST, passwordValidity.msg);
   }
-
-  // Start a Prisma transaction
-  const result = await prisma.$transaction(async prismaClient => {
-    // Encrypt password
-    const encryptedPassword = await encryptPassword(password);
-
-    // Create user with encrypted password
-    const createdUser = await prismaClient.user.create({
-      data: { ...othersData, password: encryptedPassword },
-    });
-
-    if (!createdUser?.email) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'User not created');
-    }
-
-    // Create Owner or Tenant based on the role
-    let relatedModel;
-    if (othersData?.role === 'OWNER') {
-      relatedModel = await prismaClient.owner.create({
-        data: { userId: createdUser.id },
-      });
-    } else if (othersData?.role === 'TENANT') {
-      relatedModel = await prismaClient.tenant.create({
-        data: { userId: createdUser.id },
-      });
-    } else if (othersData?.role === 'SUPERADMIN') {
-      const savedPassKey = config.sAdminPassKey;
-      console.log(savedPassKey, passKey);
-
-      if (savedPassKey !== passKey) {
-        throw new ApiError(
-          httpStatus.BAD_REQUEST,
-          'Please provide valid passkey'
-        );
-      }
-      relatedModel = await prismaClient.superAdmin.create({
-        data: { userId: createdUser.id },
-      });
-    }
-
-    if (!relatedModel?.userId) {
-      // If the related model is not created successfully, throw an error to roll back the transaction
-      throw new Error('Related model not created');
-    }
-
-    // Send email confirmation
-    const payload1: IEmailInfo = {
-      from: `${config.email_host.user}`,
-      to: createdUser.email,
-      subject: 'Registration Done',
-      text: 'Welcome to Niketon BD',
-      html: '<b><h1>Niketon BD</h1></b>',
-    };
-
-    const emailSendResult = await sentEmail(payload1);
-    if (emailSendResult.accepted.length === 0) {
-      // If email sending fails, throw an error to roll back the transaction
-      throw new Error('Email send failed');
-    }
-
-    // Return the created user
-    if (othersData?.role === 'OWNER') {
-      return { ...createdUser, owner: relatedModel };
-    } else if (othersData?.role === 'TENANT') {
-      return { ...createdUser, tenant: relatedModel };
-    } else if (othersData?.role === 'SUPERADMIN') {
-      return { ...createdUser, superAdmin: relatedModel };
-    }
-
-    return createdUser;
+  const isUserAlreadyExist = await prisma.user.findUnique({
+    where: { email: othersData?.email },
   });
+  if (isUserAlreadyExist) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User already registered !');
+  }
+  // Start a Prisma transaction
+  const result = await prisma.$transaction(
+    async prismaClient => {
+      // Encrypt password
+      const encryptedPassword = await encryptPassword(password);
+
+      // Create user with encrypted password
+      const createdUser = await prismaClient.user.create({
+        data: { ...othersData, password: encryptedPassword },
+      });
+
+      if (!createdUser?.email) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'User not created');
+      }
+
+      // Create Owner or Tenant based on the role
+      let relatedModel;
+      if (othersData?.role === 'OWNER') {
+        relatedModel = await prismaClient.owner.create({
+          data: { userId: createdUser.id },
+        });
+      } else if (othersData?.role === 'TENANT') {
+        relatedModel = await prismaClient.tenant.create({
+          data: { userId: createdUser.id },
+        });
+      } else if (othersData?.role === 'SUPERADMIN') {
+        const savedPassKey = config.sAdminPassKey;
+        console.log(savedPassKey, passKey);
+
+        if (savedPassKey !== passKey) {
+          throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            'Please provide valid passkey'
+          );
+        }
+        relatedModel = await prismaClient.superAdmin.create({
+          data: { userId: createdUser.id },
+        });
+      }
+
+      if (!relatedModel?.userId) {
+        // If the related model is not created successfully, throw an error to roll back the transaction
+        throw new Error('Related model not created');
+      }
+
+      // Send email confirmation
+      const payload1: IEmailInfo = {
+        from: `${config.email_host.user}`,
+        to: createdUser.email,
+        subject: 'Registration Done',
+        text: 'Welcome to Niketon BD',
+        html: '<b><h1>Niketon BD</h1></b> </br> <p>Your journey to finding the perfect rental home starts here. We are excited to help you discover the ideal place that suits your needs. Happy house hunting<p>',
+      };
+
+      const emailSendResult = await sentEmail(payload1);
+      if (emailSendResult.accepted.length === 0) {
+        // If email sending fails, throw an error to roll back the transaction
+        throw new Error('Email send failed');
+      }
+
+      // Return the created user
+      if (othersData?.role === 'OWNER') {
+        return { ...createdUser, owner: relatedModel };
+      } else if (othersData?.role === 'TENANT') {
+        return { ...createdUser, tenant: relatedModel };
+      } else if (othersData?.role === 'SUPERADMIN') {
+        return { ...createdUser, superAdmin: relatedModel };
+      }
+
+      return createdUser;
+    },
+    { maxWait: 5000, timeout: 10000 }
+  );
 
   return result;
 };
@@ -262,7 +271,7 @@ const sendEmailForVerifyAccount = async (
     to: isUserExist?.email,
     subject: 'Email Verification of Niketon BD',
     text: `Hi ${isUserExist?.userName} ,`,
-    html: `<div><b><h1>Niketon BD</h1></b> </br> <a href="${config.base_url_frontend}/verifyEmail/${newToken}">Click here to verify your email</a> </div>`,
+    html: `<div><b><h1>Niketon BD</h1></b> </br> <p> We're excited to have you on board. To ensure the security of your account and provide you with the best experience, please click the link below to verify your email address:</p></br> <a href="${config.base_url_frontend}/verifyEmail/${isUserExist?.email}/${newToken}">Click here to verify your email</a> </br><p> Thank you for choosing Niketon Bd ! If you have any questions or need assistance, feel free to reach out to our support team at support@niketonbd.com. </p></div>`,
   };
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   const emailSendResult = await sentEmail(payload1);
@@ -272,11 +281,11 @@ const sendEmailForVerifyAccount = async (
 };
 
 const verifyEmail = async (
-  user: JwtPayload | null,
+  email: string | undefined,
   token: string | undefined
 ) => {
   const isUserExist = await prisma.user.findUnique({
-    where: { id: user?.id },
+    where: { email: email },
   });
   if (!isUserExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found !');
@@ -288,7 +297,7 @@ const verifyEmail = async (
   }
 
   const removeToken = await prisma.user.update({
-    where: { id: user?.id },
+    where: { id: isUserExist?.id },
     data: { token: null, verified: true },
   });
 

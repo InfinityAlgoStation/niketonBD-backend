@@ -83,10 +83,8 @@ const sendEmailForVerifyAccount = catchAsync(
 );
 
 const verifyEmail = catchAsync(async (req: Request, res: Response) => {
-  const { token } = req.params;
-  const user = req.user;
-
-  await AuthServices.verifyEmail(user, token);
+  const { token, email } = req.params;
+  await AuthServices.verifyEmail(email, token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
