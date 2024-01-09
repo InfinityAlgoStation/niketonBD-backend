@@ -49,8 +49,7 @@ const updateSingle = catchAsync(async (req: Request, res: Response) => {
 
 const deleteSingle = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const data = req.body;
-  const result = await ExtraChargeServices.updateSingle(id, data);
+  const result = await ExtraChargeServices.deleteSingle(id);
   sendResponse<ExtraCharge>(res, {
     statusCode: httpStatus.OK,
     success: true,
