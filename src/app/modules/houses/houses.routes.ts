@@ -75,21 +75,17 @@ router.patch(
   }
 );
 
-router.patch(
-  '/:id',
-  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.OWNER),
-  HouseController.updateHouse
-);
-
-
 router.delete(
   '/deleteHouseImage/:imageId/:houseId',
   auth(ENUM_USER_ROLE.OWNER),
   HouseController.deleteImageFromHouse
 );
 
-
-
+router.patch(
+  '/updateInfo/:id',
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.OWNER),
+  HouseController.updateHouse
+);
 
 router.delete(
   '/:id',

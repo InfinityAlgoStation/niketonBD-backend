@@ -263,7 +263,7 @@ const deleteHouse = async (
 ): Promise<House | null> => {
   const isExist = await prisma.house.findUnique({
     where: { id },
-    include: { houseOwner: true },
+    include: { houseOwner: true, gellary: true },
   });
   if (!isExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'House not exist !');
@@ -276,7 +276,33 @@ const deleteHouse = async (
     );
   }
 
-  const result = await prisma.house.delete({ where: { id } });
+  const result = await prisma.$transaction(async prisma => {
+    // Delete images from the server
+    for (const image of isExist.gellary) {
+      const filePath = path.join(
+        process.cwd(),
+        'uploads',
+        path.basename(image.url)
+      );
+      fs.unlink(filePath, err => {
+        if (err) {
+          console.error(`Failed to delete image: ${filePath}`);
+        }
+      });
+    }
+
+    // Delete image records from the database
+    await prisma.houseImage.deleteMany({
+      where: { houseId: id },
+    });
+
+    // Delete the product
+    const result = await prisma.house.delete({
+      where: { id: id },
+    });
+    return result;
+  });
+
   return result;
 };
 
