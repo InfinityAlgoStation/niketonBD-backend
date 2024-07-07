@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE "HousePost" ALTER COLUMN "details" DROP NOT NULL,
-ALTER COLUMN "rentFee" DROP NOT NULL,
-ALTER COLUMN "minBookingCharge" DROP NOT NULL;

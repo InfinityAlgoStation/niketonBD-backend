@@ -1,18 +1,40 @@
-import express from 'express';
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+import express, { NextFunction, Request, Response } from 'express';
 import { ENUM_USER_ROLE } from '../../../enums/user';
+import { FileUploadHelper } from '../../../helpers/fuleUploadHelpers';
 import auth from '../../middlewares/auth';
-import validateRequest from '../../middlewares/validateRequest';
 import { HouseController } from './houses.controller';
 import { HouseZodValidation } from './houses.validation';
 
 const router = express.Router();
-
+// Extend Request interface to include files property
+type MulterRequest = Request & {
+  files?: Express.Multer.File[];
+};
 router.post(
   '/add',
   auth(ENUM_USER_ROLE.OWNER),
-  validateRequest(HouseZodValidation.createHouseZodSchema),
-  HouseController.createNew
+  FileUploadHelper.upload.array('files', 5),
+  (req: Request, res: Response, next: NextFunction) => {
+    const multerReq = req as MulterRequest;
+    multerReq.body = HouseZodValidation.createHouseZodSchema.parse(
+      JSON.parse(multerReq.body.data)
+    );
+    if (multerReq.files) {
+      multerReq.body.fileUrls = multerReq.files.map(
+        file => `http://localhost:5001/api/v1/house/image/${file.filename}`
+      );
+    }
+    return HouseController.createNew(multerReq, res, next);
+  }
 );
+// router.post(
+//   '/add',
+//   auth(ENUM_USER_ROLE.OWNER),
+//   validateRequest(HouseZodValidation.createHouseZodSchema),
+//   HouseController.createNew
+// );
 
 router.get('/', HouseController.getAllHouse);
 router.get('/:id', HouseController.getSingleHouse);

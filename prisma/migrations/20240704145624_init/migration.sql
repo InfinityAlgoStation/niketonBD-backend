@@ -5,6 +5,9 @@ CREATE TYPE "ContractStatus" AS ENUM ('RUNNING', 'END');
 CREATE TYPE "RequestType" AS ENUM ('BOOKING', 'LEAVE');
 
 -- CreateEnum
+CREATE TYPE "RequestStatus" AS ENUM ('PENDING', 'ACCEPTED', 'CANCEL');
+
+-- CreateEnum
 CREATE TYPE "FurnishingType" AS ENUM ('FURNISHED', 'SEMI_FURNISHED', 'UNFURNISHED');
 
 -- CreateEnum
@@ -26,7 +29,7 @@ CREATE TYPE "Role" AS ENUM ('SUPERADMIN', 'ADMIN', 'OWNER', 'TENANT');
 CREATE TABLE "extraCharge" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "icon" TEXT NOT NULL,
+    "icon" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -37,10 +40,22 @@ CREATE TABLE "extraCharge" (
 CREATE TABLE "amenities" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
+    "icon" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "amenities_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "house_image" (
+    "id" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "houseId" TEXT NOT NULL,
+
+    CONSTRAINT "house_image_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -50,13 +65,14 @@ CREATE TABLE "houses" (
     "address" TEXT NOT NULL,
     "category" "HouseCategory" NOT NULL,
     "tenantType" "TenantType" NOT NULL,
+    "contactNumber" TEXT NOT NULL,
     "quntity" INTEGER DEFAULT 1,
     "rentFee" DOUBLE PRECISION NOT NULL,
     "furnishing" "FurnishingType",
     "parking" BOOLEAN,
     "tenantGender" "TenantGender",
-    "minBookingCharge" INTEGER NOT NULL,
-    "gellary" TEXT[],
+    "minBookingCharge" DOUBLE PRECISION,
+    "isOnlineBooking" BOOLEAN NOT NULL DEFAULT false,
     "shortVideo" TEXT,
     "rules" TEXT,
     "status" "HouseStatus" NOT NULL DEFAULT 'AVAILABLE',
@@ -66,23 +82,6 @@ CREATE TABLE "houses" (
     "ownerId" TEXT NOT NULL,
 
     CONSTRAINT "houses_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "HousePost" (
-    "id" TEXT NOT NULL,
-    "houseName" TEXT NOT NULL,
-    "address" TEXT NOT NULL,
-    "contact" TEXT NOT NULL,
-    "gellary" TEXT[],
-    "details" TEXT NOT NULL,
-    "category" "HouseCategory" NOT NULL,
-    "rentFee" DOUBLE PRECISION NOT NULL,
-    "minBookingCharge" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "HousePost_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -109,7 +108,7 @@ CREATE TABLE "HouseAmenity" (
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "role" "Role" NOT NULL,
-    "userName" TEXT NOT NULL,
+    "userName" TEXT,
     "verified" BOOLEAN NOT NULL DEFAULT false,
     "firstName" TEXT,
     "lastName" TEXT,
@@ -148,6 +147,17 @@ CREATE TABLE "tetants" (
 );
 
 -- CreateTable
+CREATE TABLE "admin" (
+    "id" TEXT NOT NULL,
+    "superAdminId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "admin_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "superAdmin" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -160,12 +170,13 @@ CREATE TABLE "superAdmin" (
 -- CreateTable
 CREATE TABLE "feedbacks" (
     "id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
+    "rating" DOUBLE PRECISION NOT NULL,
+    "comment" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "ownerId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
+    "houseId" TEXT NOT NULL,
+    "ownerId" TEXT,
 
     CONSTRAINT "feedbacks_pkey" PRIMARY KEY ("id")
 );
@@ -173,7 +184,7 @@ CREATE TABLE "feedbacks" (
 -- CreateTable
 CREATE TABLE "request" (
     "id" TEXT NOT NULL,
-    "requestStatus" TEXT NOT NULL DEFAULT 'PENDING',
+    "requestStatus" "RequestStatus" NOT NULL DEFAULT 'PENDING',
     "requestType" "RequestType" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -192,12 +203,10 @@ CREATE TABLE "contracts" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "ownerId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
+    "houseId" TEXT NOT NULL,
 
     CONSTRAINT "contracts_pkey" PRIMARY KEY ("id")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "users_userName_key" ON "users"("userName");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
@@ -212,7 +221,13 @@ CREATE UNIQUE INDEX "owners_userId_key" ON "owners"("userId");
 CREATE UNIQUE INDEX "tetants_userId_key" ON "tetants"("userId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "admin_userId_key" ON "admin"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "superAdmin_userId_key" ON "superAdmin"("userId");
+
+-- AddForeignKey
+ALTER TABLE "house_image" ADD CONSTRAINT "house_image_houseId_fkey" FOREIGN KEY ("houseId") REFERENCES "houses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "houses" ADD CONSTRAINT "houses_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "owners"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -236,13 +251,22 @@ ALTER TABLE "owners" ADD CONSTRAINT "owners_userId_fkey" FOREIGN KEY ("userId") 
 ALTER TABLE "tetants" ADD CONSTRAINT "tetants_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "admin" ADD CONSTRAINT "admin_superAdminId_fkey" FOREIGN KEY ("superAdminId") REFERENCES "superAdmin"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "admin" ADD CONSTRAINT "admin_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "superAdmin" ADD CONSTRAINT "superAdmin_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "feedbacks" ADD CONSTRAINT "feedbacks_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "owners"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "feedbacks" ADD CONSTRAINT "feedbacks_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "tetants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "feedbacks" ADD CONSTRAINT "feedbacks_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "tetants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "feedbacks" ADD CONSTRAINT "feedbacks_houseId_fkey" FOREIGN KEY ("houseId") REFERENCES "houses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "feedbacks" ADD CONSTRAINT "feedbacks_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "owners"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "request" ADD CONSTRAINT "request_houseId_fkey" FOREIGN KEY ("houseId") REFERENCES "houses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -258,3 +282,6 @@ ALTER TABLE "contracts" ADD CONSTRAINT "contracts_ownerId_fkey" FOREIGN KEY ("ow
 
 -- AddForeignKey
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "tetants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_houseId_fkey" FOREIGN KEY ("houseId") REFERENCES "houses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
