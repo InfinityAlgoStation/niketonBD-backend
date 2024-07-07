@@ -20,6 +20,39 @@ const createNew = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const addImageToProduct = catchAsync(async (req: Request, res: Response) => {
+  const result = await HouseServices.addNewImageForProduct(req);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'House photo updated ',
+    data: result,
+  });
+});
+
+
+
+const deleteImageFromHouse = catchAsync(async (req: Request, res: Response) => {
+  const { imageId, houseId } = req.params;
+  const { id: userId } = req.user as any;
+
+  const result = await HouseServices.deleteImageFromHouse(
+    imageId,
+    houseId,
+    userId
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Product photo updated ',
+    data: result,
+  });
+});
+
+
+
+
+
 const getAllHouse = catchAsync(async (req: Request, res: Response) => {
   const filters = pick(req.query, houseFilterableFields);
   const options = pick(req.query, paginationFields);
@@ -152,4 +185,6 @@ export const HouseController = {
   removeAmenityHouse,
   addExtraChargeHouse,
   removeExtraChargeHouse,
+  addImageToProduct,
+  deleteImageFromHouse,
 };

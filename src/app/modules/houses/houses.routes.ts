@@ -30,7 +30,6 @@ router.post(
         file => `${config.api_link_Image}/api/v1/houses/image/${file.filename}`
       );
     }
-   
 
     return HouseController.createNew(multerReq, res, next);
   }
@@ -51,14 +50,47 @@ router.get('/image/:fileName', async (req: Request, res: Response) => {
   });
 });
 
-
 router.get('/', HouseController.getAllHouse);
 router.get('/:id', HouseController.getSingleHouse);
+
+router.patch(
+  '/addImages/:houseId',
+  auth(ENUM_USER_ROLE.OWNER),
+  FileUploadHelper.upload.array('files', 5), // Ensure 'files' matches the field name used in the form
+  async (req: Request, res: Response, next: NextFunction) => {
+    const multerReq = req as MulterRequest;
+
+    try {
+      if (multerReq.files) {
+        multerReq.body.fileUrls = multerReq.files.map(
+          file =>
+            `${config.api_link_Image}/api/v1/houses/image/${file.filename}`
+        );
+      }
+
+      return await HouseController.addImageToProduct(multerReq, res, next);
+    } catch (error) {
+      return next(error); // Forward the error to the error handler
+    }
+  }
+);
+
 router.patch(
   '/:id',
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.OWNER),
   HouseController.updateHouse
 );
+
+
+router.delete(
+  '/deleteHouseImage/:imageId/:houseId',
+  auth(ENUM_USER_ROLE.OWNER),
+  HouseController.deleteImageFromHouse
+);
+
+
+
+
 router.delete(
   '/:id',
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.OWNER),

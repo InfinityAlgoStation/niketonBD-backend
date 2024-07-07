@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { House } from '@prisma/client';
 import { Request } from 'express';
+import fs from 'fs';
 import httpStatus from 'http-status';
+import path from 'path';
 import ApiError from '../../../errors/ApiError';
 import { paginationHelpers } from '../../../helpers/paginationHelper';
 import { IGenericResponse } from '../../../interfaces/common';
 import { IPaginationOptions } from '../../../interfaces/pagination';
 import prisma from '../../../shared/prisma';
 import { houseSearchableFields } from './houses.constant';
-
 const createNew = async (payload: Request): Promise<House> => {
   const { fileUrls, ...others } = payload.body;
 
@@ -35,6 +36,80 @@ const createNew = async (payload: Request): Promise<House> => {
     });
     return result;
   }
+};
+
+const addNewImageForProduct = async (req: Request): Promise<House | null> => {
+  const { houseId } = req.params;
+  const { id: userId } = req.user as any;
+  const { fileUrls } = req.body;
+
+  const isHouseExist = await prisma.house.findUnique({
+    where: { id: houseId },
+    include: {
+      gellary: true,
+    },
+  });
+
+  const isValidOwner = await prisma.owner.findUnique({
+    where: { userId: userId },
+  });
+  if (!isValidOwner) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Owner info not found');
+  }
+
+  if (!isHouseExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Product not found ');
+  }
+  if (isHouseExist?.ownerId !== isValidOwner.id) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Only owner can update products ');
+  }
+
+  //* check number of images
+  const currentImageCount = isHouseExist.gellary.length;
+  const newImagesCount = fileUrls.length;
+
+  if (currentImageCount + newImagesCount > 5) {
+    const availableSlots = 5 - currentImageCount;
+
+    if (availableSlots < newImagesCount) {
+      const excessFiles = fileUrls.slice(availableSlots);
+      excessFiles.forEach((url: string) => {
+        const filePath = path.join(
+          process.cwd(),
+          'uploads',
+          path.basename(url)
+        );
+        fs.unlink(filePath, err => {
+          if (err) {
+            throw new ApiError(
+              httpStatus.BAD_REQUEST,
+              `Failed to delete image: ${filePath}`
+            );
+          }
+        });
+      });
+    }
+    // Trim the fileUrls array to fit the available slots
+    fileUrls.splice(availableSlots, newImagesCount - availableSlots);
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `You can upload only ${availableSlots} images`
+    );
+  }
+
+  const result = await prisma.house.update({
+    where: { id: houseId },
+    data: {
+      gellary: {
+        create: fileUrls.map((url: string) => ({ url })),
+      },
+    },
+    include: {
+      houseOwner: true,
+      gellary: true,
+    },
+  });
+  return result;
 };
 
 const getAllHouse = async (
@@ -372,6 +447,73 @@ const removeHouseExtraCharge = async (
   return result;
 };
 
+const deleteImageFromHouse = async (
+  imageId: string,
+  houseId: string,
+  userId: string
+): Promise<House | null> => {
+  const isValidOwner = await prisma.owner.findUnique({
+    where: { userId: userId },
+  });
+  if (!isValidOwner) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Owner info not found');
+  }
+
+  const isProductExist = await prisma.house.findUnique({
+    where: { id: houseId },
+    include: {
+      houseOwner: true,
+      gellary: true,
+    },
+  });
+
+  if (!isProductExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Product not found ');
+  }
+
+  if (isProductExist?.ownerId !== isValidOwner.id) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Invalid owner  ');
+  }
+
+  const isImageExist = await prisma.houseImage.findUnique({
+    where: { id: imageId, houseId: houseId },
+  });
+
+  if (!isImageExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Image not found ');
+  }
+
+  // Delete the image file from the server
+  const filePath = path.join(
+    process.cwd(),
+    'uploads',
+    path.basename(isImageExist.url)
+  );
+  fs.unlink(filePath, err => {
+    if (err) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        `Failed to delete image: ${filePath}`
+      );
+    }
+  });
+
+  // Delete the image from the database
+  await prisma.houseImage.delete({
+    where: { id: imageId },
+  });
+
+  const result = await prisma.house.findUnique({
+    where: { id: houseId },
+    include: {
+      houseOwner: true,
+      gellary: true,
+    },
+  });
+
+  return result;
+};
+
 export const HouseServices = {
   createNew,
   getAllHouse,
@@ -382,4 +524,6 @@ export const HouseServices = {
   removeAmenityHouse,
   addHouseExtraCharge,
   removeHouseExtraCharge,
+  addNewImageForProduct,
+  deleteImageFromHouse,
 };
