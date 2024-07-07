@@ -49,7 +49,7 @@ model House {
   address          String
   category         HouseCategory
   tenantType       TenantType
-  contactNumber    String
+  contactNumber    String?
   quntity          Int?               @default(1)
   rentFee          Float
   furnishing       FurnishingType?

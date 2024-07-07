@@ -1,12 +1,16 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 import express, { NextFunction, Request, Response } from 'express';
+import fs from 'fs';
+import httpStatus from 'http-status';
+import path from 'path';
+import config from '../../../config';
 import { ENUM_USER_ROLE } from '../../../enums/user';
-import { FileUploadHelper } from '../../../helpers/fuleUploadHelpers';
+import ApiError from '../../../errors/ApiError';
+import { FileUploadHelper } from '../../../helpers/fileUploadHelpers';
 import auth from '../../middlewares/auth';
 import { HouseController } from './houses.controller';
 import { HouseZodValidation } from './houses.validation';
-
 const router = express.Router();
 // Extend Request interface to include files property
 type MulterRequest = Request & {
@@ -14,7 +18,7 @@ type MulterRequest = Request & {
 };
 router.post(
   '/add',
-  auth(ENUM_USER_ROLE.OWNER),
+  auth(ENUM_USER_ROLE.OWNER, ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
   FileUploadHelper.upload.array('files', 5),
   (req: Request, res: Response, next: NextFunction) => {
     const multerReq = req as MulterRequest;
@@ -23,18 +27,30 @@ router.post(
     );
     if (multerReq.files) {
       multerReq.body.fileUrls = multerReq.files.map(
-        file => `http://localhost:5001/api/v1/house/image/${file.filename}`
+        file => `${config.api_link_Image}/api/v1/houses/image/${file.filename}`
       );
     }
+   
+
     return HouseController.createNew(multerReq, res, next);
   }
 );
-// router.post(
-//   '/add',
-//   auth(ENUM_USER_ROLE.OWNER),
-//   validateRequest(HouseZodValidation.createHouseZodSchema),
-//   HouseController.createNew
-// );
+router.get('/image/:fileName', async (req: Request, res: Response) => {
+  const filePath = await path.join(
+    process.cwd(),
+    'uploads',
+    path.basename(req.params.fileName)
+  );
+  // Check if the file exists
+  await fs.access(filePath, fs.constants.F_OK, err => {
+    if (err) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Image not found');
+    }
+    // Send the image file
+    res.sendFile(filePath);
+  });
+});
+
 
 router.get('/', HouseController.getAllHouse);
 router.get('/:id', HouseController.getSingleHouse);

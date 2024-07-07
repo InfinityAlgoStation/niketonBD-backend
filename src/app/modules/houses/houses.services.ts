@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { House } from '@prisma/client';
+import { Request } from 'express';
 import httpStatus from 'http-status';
 import ApiError from '../../../errors/ApiError';
 import { paginationHelpers } from '../../../helpers/paginationHelper';
@@ -8,14 +9,32 @@ import { IPaginationOptions } from '../../../interfaces/pagination';
 import prisma from '../../../shared/prisma';
 import { houseSearchableFields } from './houses.constant';
 
-const createNew = async (payload: House): Promise<House> => {
-  const result = await prisma.house.create({
-    data: payload,
-    include: {
-      houseOwner: true,
-    },
-  });
-  return result;
+const createNew = async (payload: Request): Promise<House> => {
+  const { fileUrls, ...others } = payload.body;
+
+  if (fileUrls) {
+    const result = await prisma.house.create({
+      data: {
+        gellary: {
+          create: fileUrls.map((url: string) => ({ url })),
+        },
+        ...others,
+      },
+      include: {
+        houseOwner: true,
+        gellary: true,
+      },
+    });
+    return result;
+  } else {
+    const result = await prisma.house.create({
+      data: others,
+      include: {
+        houseOwner: true,
+      },
+    });
+    return result;
+  }
 };
 
 const getAllHouse = async (

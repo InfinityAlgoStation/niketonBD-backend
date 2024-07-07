@@ -11,7 +11,7 @@ import { houseFilterableFields } from './houses.constant';
 import { HouseServices } from './houses.services';
 
 const createNew = catchAsync(async (req: Request, res: Response) => {
-  const result = await HouseServices.createNew(req.body);
+  const result = await HouseServices.createNew(req);
   sendResponse<House>(res, {
     statusCode: httpStatus.OK,
     success: true,
