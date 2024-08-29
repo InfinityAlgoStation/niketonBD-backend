@@ -11,20 +11,20 @@ enum HouseCategory {
 
 */
 const createHouseZodSchema = z.object({
-  body: z.object({
-    houseName: z.string({ required_error: 'House name is required' }),
-    address: z.string({ required_error: 'Address is required' }),
-    category: z.enum(['FLAT', 'SINGLE_ROOM', 'HOSTEL', 'SHOP', 'OFFICE'], {
-      required_error: 'House category is required ',
-    }),
-    tenantType: z.enum(['SUBLATE', 'BACHELOR', 'FAMILY'], {
-      required_error: 'Tenant type is required ',
-    }),
-    rentFee: z.number({ required_error: 'Monthly Rent fee is required ' }),
-    minBookingCharge: z.number({
-      required_error: 'Minimum booking charged is required ',
-    }),
+  houseName: z.string({ required_error: 'House name is required' }),
+  address: z.string({ required_error: 'Address is required' }),
+  category: z.enum(['FLAT', 'SINGLE_ROOM', 'HOSTEL', 'SHOP', 'OFFICE'], {
+    required_error: 'House category is required ',
   }),
+  tenantType: z.enum(['SUBLATE', 'BACHELOR', 'FAMILY'], {
+    required_error: 'Tenant type is required ',
+  }),
+  rentFee: z.number({ required_error: 'Monthly Rent fee is required ' }),
+  minBookingCharge: z.number({
+    required_error: 'Minimum booking charged is required ',
+  }),
+  contactNumber: z.string().optional(),
+  ownerId: z.string(),
 });
 
 const createHousePostZodSchema = z.object({

@@ -10,7 +10,7 @@
     "lint:check": "eslint --ignore-path .eslintignore --ext .js,.ts .",
     "lint:fix": "eslint . --fix",
     "prettier:check": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
-    "prettier:fix": "prettier --write .",
+    "prettier:fix": "prettier --fix .",
     "lint-prettier": "yarn lint:check && yarn prettier:check",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "prisma generate"
@@ -18,7 +18,10 @@
   "author": "Sabbir Hossain",
   "license": "ISC",
   "lint-staged": {
-    "src/**/*.ts": "yarn lint-prettier"
+    "src/**/*.{js,ts,json}": [
+      "eslint",
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",
@@ -39,6 +42,7 @@
     "@types/bcrypt": "^5.0.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/jsonwebtoken": "^9.0.2",
+    "@types/multer": "^1.4.11",
     "@types/nodemailer": "^6.4.13",
     "@types/uuid": "^9.0.6",
     "argon2": "^0.31.0",
@@ -49,6 +53,7 @@
     "express": "^4.18.2",
     "http-status": "^1.6.2",
     "jsonwebtoken": "^9.0.0",
+    "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.2",
     "nodemailer": "^6.9.7",
     "uuid": "^9.0.1",

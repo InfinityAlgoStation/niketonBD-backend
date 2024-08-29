@@ -11,7 +11,7 @@ import { houseFilterableFields } from './houses.constant';
 import { HouseServices } from './houses.services';
 
 const createNew = catchAsync(async (req: Request, res: Response) => {
-  const result = await HouseServices.createNew(req.body);
+  const result = await HouseServices.createNew(req);
   sendResponse<House>(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -19,6 +19,39 @@ const createNew = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+const addImageToProduct = catchAsync(async (req: Request, res: Response) => {
+  const result = await HouseServices.addNewImageForProduct(req);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'House photo updated ',
+    data: result,
+  });
+});
+
+
+
+const deleteImageFromHouse = catchAsync(async (req: Request, res: Response) => {
+  const { imageId, houseId } = req.params;
+  const { id: userId } = req.user as any;
+
+  const result = await HouseServices.deleteImageFromHouse(
+    imageId,
+    houseId,
+    userId
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Product photo updated ',
+    data: result,
+  });
+});
+
+
+
+
 
 const getAllHouse = catchAsync(async (req: Request, res: Response) => {
   const filters = pick(req.query, houseFilterableFields);
@@ -152,4 +185,6 @@ export const HouseController = {
   removeAmenityHouse,
   addExtraChargeHouse,
   removeExtraChargeHouse,
+  addImageToProduct,
+  deleteImageFromHouse,
 };
