@@ -23,7 +23,8 @@ const createHouseZodSchema = z.object({
   minBookingCharge: z.number({
     required_error: 'Minimum booking charged is required ',
   }),
-  ownerId:z.string()
+  contactNumber: z.string().optional(),
+  ownerId: z.string(),
 });
 
 const createHousePostZodSchema = z.object({

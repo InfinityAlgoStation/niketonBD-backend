@@ -12,6 +12,7 @@ import prisma from '../../../shared/prisma';
 import { houseSearchableFields } from './houses.constant';
 const createNew = async (payload: Request): Promise<House> => {
   const { fileUrls, ...others } = payload.body;
+  console.log(others);
 
   if (fileUrls) {
     const result = await prisma.house.create({
