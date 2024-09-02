@@ -11,9 +11,16 @@ import { IPaginationOptions } from '../../../interfaces/pagination';
 import prisma from '../../../shared/prisma';
 import { houseSearchableFields } from './houses.constant';
 const createNew = async (payload: Request): Promise<House> => {
-  const { fileUrls, ...others } = payload.body;
-  console.log(others);
+  const { id: userId } = payload.user as any;
 
+  const userInfo = await prisma.user.findUnique({ where: { id: userId } });
+  if (!userInfo) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'user info not found');
+  }
+  if (userInfo.role === 'OWNER' && userInfo.verified === false) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Owner is not verified');
+  }
+  const { fileUrls, ...others } = payload.body;
   if (fileUrls) {
     const result = await prisma.house.create({
       data: {
