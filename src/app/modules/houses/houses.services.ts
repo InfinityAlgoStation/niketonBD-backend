@@ -178,6 +178,7 @@ const getAllHouse = async (
             createdAt: 'desc',
           },
     include: {
+      gellary:true,
       houseOwner: {
         include: {
           user: true,
