@@ -216,6 +216,7 @@ const getSingleHouseDetails = async (id: string): Promise<House | null> => {
   const result = await prisma.house.findUnique({
     where: { id },
     include: {
+      gellary: true,
       houseOwner: {
         include: {
           user: true,
